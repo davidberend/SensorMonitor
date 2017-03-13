@@ -43,15 +43,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     TextView textGyroscopeX;
     TextView textGyroscopeY;
     TextView textGyroscopeZ;
+
     //=========================================
     // Variables
     //=========================================
     ArrayList<View> sensorTextViews;
     ArrayList<View> sensorSwitches;
+    ArrayList<Sensor> checkedSensors;
     //-----------------------------------------
     SensorManager mSensorManager;
     Sensor accelerometer;
     Sensor gyroscope;
+    //-----------------------------------------
+    DataManagement dataManagement;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +64,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         initializeComponents();
         initializeVariables();
-        setListeners();
+
+        setComponentListeners();
+        setSensorListeners();
     }
 
     //=========================================
@@ -113,17 +119,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         sensorSwitches.add(switchAmbientLight);
         sensorSwitches.add(switchGPS);
 
-        mSensorManager = (SensorManager) this.getSystemService(SENSOR_SERVICE);
-        accelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        gyroscope = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+        checkedSensors = new ArrayList<>();
 
+        mSensorManager = (SensorManager) this.getSystemService(SENSOR_SERVICE);
+        accelerometer  = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        gyroscope      = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+
+        dataManagement = new DataManagement(checkedSensors);
     }
 
-    private void setListeners(){
-
+    private void setComponentListeners(){
         buttonRecord.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 if(buttonRecord.getText() == getResources().getString(R.string.recordButtonStart)){
+
                     buttonRecord.setText(getResources().getString(R.string.recordButtonStop));
 
                     // deactivate components
@@ -135,31 +144,56 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     for(View t : sensorTextViews){
                         t.setBackgroundColor( getResources().getColor(R.color.colorDisabled));
                     }
+
+                    checkedSensors = getCheckedSensors();
+                    setSensorListeners(checkedSensors);
+                    dataManagement.read();
+
                 }
                 else {
-                    buttonRecord.setText(getResources().getString(R.string.recordButtonStart));
+
+                    dataManagement.save();
+
+                    // color text standard grey
+                    for(View t : sensorTextViews){
+                        t.setBackgroundColor( getResources().getColor(R.color.colorEnabled));
+                    }
 
                     // activate components
                     for(View s : sensorSwitches){
                         s.setEnabled(true);
                     }
 
-                    // color text standard grey
-                    for(View t : sensorTextViews){
-                        t.setBackgroundColor( getResources().getColor(R.color.colorEnabled));
-                    }
+                    buttonRecord.setText(getResources().getString(R.string.recordButtonStart));
                 }
             }
         });
+    }
 
-        mSensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_UI);
-        mSensorManager.registerListener(this, gyroscope, SensorManager.SENSOR_DELAY_UI);
 
+
+    private ArrayList<Sensor> getCheckedSensors(){
+        ArrayList<Sensor> checkedSensors = new ArrayList<>();
+        if (switchAccelerometer.isChecked() == true)
+            checkedSensors.add(accelerometer);
+
+        if(switchGyroscope.isChecked() == true)
+            checkedSensors.add(gyroscope);
+
+        return checkedSensors;
     }
 
     //=========================================
-    // Functionality
+    // Sensor Management
     //=========================================
+
+    // Activate required sensors
+    private void setSensorListeners(ArrayList<Sensor> sensors){
+        for(Sensor s : sensors){
+            mSensorManager.registerListener(this, s, SensorManager.SENSOR_DELAY_UI);
+        }
+    }
+
     @Override
     public void onSensorChanged(SensorEvent event) {
 
