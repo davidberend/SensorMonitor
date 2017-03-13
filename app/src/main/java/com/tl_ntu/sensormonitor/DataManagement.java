@@ -4,10 +4,6 @@ import android.hardware.Sensor;
 
 import java.util.ArrayList;
 
-/**
- * Created by admin on 13.03.2017.
- */
-
 class DataManagement {
 
     private ArrayList<Sensor> sensors;

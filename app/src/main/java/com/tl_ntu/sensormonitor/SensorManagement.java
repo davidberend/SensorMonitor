@@ -8,7 +8,6 @@ import android.hardware.SensorManager;
 
 import java.util.ArrayList;
 
-
 public class SensorManagement implements SensorEventListener{
 
     private SensorManager mSensorManager;
@@ -23,34 +22,39 @@ public class SensorManagement implements SensorEventListener{
     private Float gyroscopeY;
     private Float gyroscopeZ;
 
-    private ArrayList<Integer> requiredSensors;
-    
+    SensorListener sensorListener;
 
-    public SensorManagement(Context context, ArrayList<Integer> requiredSensors){
-        this.requiredSensors = requiredSensors;
-        
-        // Initialize manager
+    public SensorManagement(Context context, SensorListener sensorListener){
         mSensorManager = (SensorManager) context.getSystemService(context.SENSOR_SERVICE);
-        
-        // Initialize & register required sensors
+
+        this.sensorListener = sensorListener;
+
+        accelerometer  = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        accelerometerX = 0.0f;
+        accelerometerY = 0.0f;
+        accelerometerZ = 0.0f;
+        gyroscope  = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+        gyroscopeX = 0.0f;
+        gyroscopeY = 0.0f;
+        gyroscopeY = 0.0f;
+    }
+
+    private void registerSensor(Sensor sensor){
+        mSensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_UI);
+    }
+
+    public void registerSensors(ArrayList<Integer> requiredSensors){
+
         for(Integer sensorName : requiredSensors){
             switch(sensorName){
-                case Sensor.TYPE_ACCELEROMETER: initializeSensor(accelerometer, sensorName);
-                                                registerSensor(accelerometer);
-                                                break;
-                case Sensor.TYPE_GYROSCOPE:     initializeSensor(gyroscope, sensorName);
-                                                registerSensor(gyroscope);
-                                                break;                    
+                case Sensor.TYPE_ACCELEROMETER:
+                    registerSensor(accelerometer);
+                    break;
+                case Sensor.TYPE_GYROSCOPE:
+                    registerSensor(gyroscope);
+                    break;
             }
         }
-    }
-
-    private void initializeSensor(Sensor sensor, Integer name){
-        sensor = mSensorManager.getDefaultSensor(name);
-    }
-
-    public void registerSensor(Sensor sensor){
-        mSensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_UI);
     }
 
     public void unregisterSensors(){
@@ -59,17 +63,23 @@ public class SensorManagement implements SensorEventListener{
 
     @Override
     public void onSensorChanged(SensorEvent event) {
+        if (event.sensor.getType() != Sensor.TYPE_ACCELEROMETER && event.sensor.getType() != Sensor.TYPE_GYROSCOPE)
+            return;
+
+
         switch(event.sensor.getType()) {
             case Sensor.TYPE_ACCELEROMETER:
                 accelerometerX = event.values[0];
                 accelerometerY = event.values[1];
                 accelerometerZ = event.values[2];
+                sensorListener.onValueChange(event);
                 break;                        
 
             case Sensor.TYPE_GYROSCOPE:
                 gyroscopeX = event.values[0];
                 gyroscopeY = event.values[1];
                 gyroscopeZ = event.values[2];
+                sensorListener.onValueChange(event);
                 break;
         }
     }

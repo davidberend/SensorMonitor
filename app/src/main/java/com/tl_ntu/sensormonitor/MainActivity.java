@@ -2,8 +2,6 @@ package com.tl_ntu.sensormonitor;
 
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -13,7 +11,7 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements SensorEventListener{
+public class MainActivity extends AppCompatActivity implements SensorListener{
 
     //=========================================
     // Components
@@ -49,13 +47,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     //=========================================
     ArrayList<View> sensorTextViews;
     ArrayList<View> sensorSwitches;
-    ArrayList<Sensor> checkedSensors;
+    ArrayList<Integer> requiredSensors;
     //-----------------------------------------
-    SensorManager mSensorManager;
-    Sensor accelerometer;
-    Sensor gyroscope;
+    SensorManagement sensorManagement;
     //-----------------------------------------
-    DataManagement dataManagement;
+    //DataManagement dataManagement;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,8 +61,26 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         initializeComponents();
         initializeVariables();
 
-        setComponentListeners();
-        setSensorListeners();
+        buttonRecord.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+            if(buttonRecord.getText() == getResources().getString(R.string.recordButtonStart)){
+
+                buttonRecord.setText(getResources().getString(R.string.recordButtonStop));
+                disableComponents();
+                getRequiredSensors();
+                sensorManagement.registerSensors(requiredSensors);
+                //dataManagement.read();
+
+            }
+            else {
+
+                //dataManagement.save();
+                sensorManagement.unregisterSensors();
+                enableComponents();
+                buttonRecord.setText(getResources().getString(R.string.recordButtonStart));
+            }
+            }
+        });
     }
 
     //=========================================
@@ -119,101 +133,50 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         sensorSwitches.add(switchAmbientLight);
         sensorSwitches.add(switchGPS);
 
-        checkedSensors = new ArrayList<>();
+        requiredSensors = new ArrayList<>();
 
-        mSensorManager = (SensorManager) this.getSystemService(SENSOR_SERVICE);
-        accelerometer  = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        gyroscope      = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
-
-        dataManagement = new DataManagement(checkedSensors);
+        sensorManagement = new SensorManagement(this, this);
+        //dataManagement = new DataManagement(requiredSensors);
     }
 
-    private void setComponentListeners(){
-        buttonRecord.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                if(buttonRecord.getText() == getResources().getString(R.string.recordButtonStart)){
+    private void disableComponents(){
+        for(View s : sensorSwitches){
+            s.setEnabled(false);
+        }
 
-                    buttonRecord.setText(getResources().getString(R.string.recordButtonStop));
-
-                    // deactivate components
-                    for(View s : sensorSwitches){
-                        s.setEnabled(false);
-                    }
-
-                    // color text light grey
-                    for(View t : sensorTextViews){
-                        t.setBackgroundColor( getResources().getColor(R.color.colorDisabled));
-                    }
-
-                    checkedSensors = getCheckedSensors();
-                    setSensorListeners(checkedSensors);
-                    dataManagement.read();
-
-                }
-                else {
-
-                    dataManagement.save();
-
-                    // color text standard grey
-                    for(View t : sensorTextViews){
-                        t.setBackgroundColor( getResources().getColor(R.color.colorEnabled));
-                    }
-
-                    // activate components
-                    for(View s : sensorSwitches){
-                        s.setEnabled(true);
-                    }
-
-                    buttonRecord.setText(getResources().getString(R.string.recordButtonStart));
-                }
-            }
-        });
-    }
-
-
-
-    private ArrayList<Sensor> getCheckedSensors(){
-        ArrayList<Sensor> checkedSensors = new ArrayList<>();
-        if (switchAccelerometer.isChecked() == true)
-            checkedSensors.add(accelerometer);
-
-        if(switchGyroscope.isChecked() == true)
-            checkedSensors.add(gyroscope);
-
-        return checkedSensors;
-    }
-
-    //=========================================
-    // Sensor Management
-    //=========================================
-
-    // Activate required sensors
-    private void setSensorListeners(ArrayList<Sensor> sensors){
-        for(Sensor s : sensors){
-            mSensorManager.registerListener(this, s, SensorManager.SENSOR_DELAY_UI);
+        // color text bg light grey
+        for(View t : sensorTextViews){
+            t.setBackgroundColor( getResources().getColor(R.color.colorDisabled));
         }
     }
 
-    @Override
-    public void onSensorChanged(SensorEvent event) {
+    private void enableComponents(){
+        for(View s : sensorSwitches){
+            s.setEnabled(true);
+        }
 
-        switch(event.sensor.getType()) {
-            case Sensor.TYPE_ACCELEROMETER:
-                textAccelerometerX.setText(Float.toString(event.values[0]));
-                textAccelerometerY.setText(Float.toString(event.values[1]));
-                textAccelerometerZ.setText(Float.toString(event.values[2]));
-                break;
-
-            case Sensor.TYPE_GYROSCOPE:
-                textGyroscopeX.setText(Float.toString(event.values[0]));
-                textGyroscopeY.setText(Float.toString(event.values[1]));
-                textGyroscopeZ.setText(Float.toString(event.values[2]));
-                break;
+        // color text bg white
+        for(View t : sensorTextViews){
+            t.setBackgroundColor( getResources().getColor(R.color.colorEnabled));
         }
     }
 
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+    private void getRequiredSensors(){
 
+        // drop all old data
+        requiredSensors.clear();
+
+        if (switchAccelerometer.isChecked())
+            requiredSensors.add(Sensor.TYPE_ACCELEROMETER);
+
+        if(switchGyroscope.isChecked())
+            requiredSensors.add(Sensor.TYPE_GYROSCOPE);
+    }
+
+    @Override
+    public void onValueChange(SensorEvent event) {
+        textAccelerometerX.setText(Float.toString(sensorManagement.getAccelerometerX()));
+        textAccelerometerY.setText(Float.toString(sensorManagement.getAccelerometerY()));
+        textAccelerometerZ.setText(Float.toString(sensorManagement.getAccelerometerZ()));
     }
 }
