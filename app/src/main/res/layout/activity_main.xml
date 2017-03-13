@@ -18,8 +18,8 @@
 
             <RelativeLayout
                 android:orientation="horizontal"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
                 android:layout_marginBottom="20dp"
                 android:layout_marginLeft="20dp"
@@ -33,7 +33,7 @@
                     android:textSize="20sp"
                     android:textColor="#424242"
                     android:layout_alignParentLeft="true"
-                    android:layout_centerVertical="true" />
+                    android:layout_alignParentTop="true" />
 
                 <Switch
                     android:id="@+id/switchAccelerometer"
@@ -41,6 +41,39 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentRight="true" />
 
+                <TextView
+                    android:id="@+id/textAccelerometerX"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="X"
+                    android:textSize="20sp"
+                    android:textColor="#424242"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_marginTop="25dp"/>
+
+                <TextView
+                    android:id="@+id/textAccelerometerY"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Y"
+                    android:textSize="20sp"
+                    android:textColor="#424242"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_marginTop="50dp" />
+
+                <TextView
+                    android:id="@+id/textAccelerometerZ"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Z"
+                    android:textSize="20sp"
+                    android:textColor="#424242"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_marginTop="75dp" />
+                    
             </RelativeLayout>
             <RelativeLayout
                 android:orientation="horizontal"
@@ -59,13 +92,46 @@
                     android:textSize="20sp"
                     android:textColor="#424242"
                     android:layout_alignParentLeft="true"
-                    android:layout_centerVertical="true" />
-
+                    android:layout_alignParentTop="true" />
+                
                 <Switch
                     android:id="@+id/switchGyroscope"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentRight="true" />
+                
+                <TextView
+                    android:id="@+id/textGyroscopeX"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="X"
+                    android:textSize="20sp"
+                    android:textColor="#424242"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_marginTop="25dp"/>
+
+                <TextView
+                    android:id="@+id/textGyroscopeY"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Y"
+                    android:textSize="20sp"
+                    android:textColor="#424242"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_marginTop="50dp" />
+
+                <TextView
+                    android:id="@+id/textGyroscopeZ"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Z"
+                    android:textSize="20sp"
+                    android:textColor="#424242"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_marginTop="75dp" />
 
             </RelativeLayout>
             <RelativeLayout

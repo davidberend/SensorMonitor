@@ -1,5 +1,9 @@
 package com.tl_ntu.sensormonitor;
 
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -9,7 +13,7 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SensorEventListener{
 
     //=========================================
     // Components
@@ -32,11 +36,22 @@ public class MainActivity extends AppCompatActivity {
     //-----------------------------------------
     Button buttonRecord;
 
+    // Test coordinates components
+    TextView textAccelerometerX;
+    TextView textAccelerometerY;
+    TextView textAccelerometerZ;
+    TextView textGyroscopeX;
+    TextView textGyroscopeY;
+    TextView textGyroscopeZ;
     //=========================================
     // Variables
     //=========================================
-    private ArrayList<View> sensorTextViews;
-    private ArrayList<View> sensorSwitches;
+    ArrayList<View> sensorTextViews;
+    ArrayList<View> sensorSwitches;
+    //-----------------------------------------
+    SensorManager mSensorManager;
+    Sensor accelerometer;
+    Sensor gyroscope;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
 
         initializeComponents();
         initializeVariables();
-        setOnClickListeners();
+        setListeners();
     }
 
     //=========================================
@@ -70,6 +85,13 @@ public class MainActivity extends AppCompatActivity {
         switchGPS              = (Switch) findViewById(R.id.switchGPS);
         //-----------------------------------------
         buttonRecord           = (Button) findViewById(R.id.buttonRecord);
+        //-----------------------------------------
+        textAccelerometerX    = (TextView) findViewById(R.id.textAccelerometerX);
+        textAccelerometerY    = (TextView) findViewById(R.id.textAccelerometerY);
+        textAccelerometerZ    = (TextView) findViewById(R.id.textAccelerometerZ);
+        textGyroscopeX        = (TextView) findViewById(R.id.textGyroscopeX);
+        textGyroscopeY        = (TextView) findViewById(R.id.textGyroscopeY);
+        textGyroscopeZ        = (TextView) findViewById(R.id.textGyroscopeZ);
     }
 
     private void initializeVariables(){
@@ -90,9 +112,14 @@ public class MainActivity extends AppCompatActivity {
         sensorSwitches.add(switchBarometer);
         sensorSwitches.add(switchAmbientLight);
         sensorSwitches.add(switchGPS);
+
+        mSensorManager = (SensorManager) this.getSystemService(SENSOR_SERVICE);
+        accelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        gyroscope = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+
     }
 
-    private void setOnClickListeners(){
+    private void setListeners(){
 
         buttonRecord.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -124,11 +151,35 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
+        mSensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_UI);
+        mSensorManager.registerListener(this, gyroscope, SensorManager.SENSOR_DELAY_UI);
+
     }
 
     //=========================================
     // Functionality
     //=========================================
+    @Override
+    public void onSensorChanged(SensorEvent event) {
 
+        switch(event.sensor.getType()) {
+            case Sensor.TYPE_ACCELEROMETER:
+                textAccelerometerX.setText(Float.toString(event.values[0]));
+                textAccelerometerY.setText(Float.toString(event.values[1]));
+                textAccelerometerZ.setText(Float.toString(event.values[2]));
+                break;
 
+            case Sensor.TYPE_GYROSCOPE:
+                textGyroscopeX.setText(Float.toString(event.values[0]));
+                textGyroscopeY.setText(Float.toString(event.values[1]));
+                textGyroscopeZ.setText(Float.toString(event.values[2]));
+                break;
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+    }
 }
