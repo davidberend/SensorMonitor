@@ -22,7 +22,7 @@ public class SensorManagement implements SensorEventListener{
     private Float gyroscopeY;
     private Float gyroscopeZ;
 
-    SensorListener sensorListener;
+    private SensorListener sensorListener;
 
     public SensorManagement(Context context, SensorListener sensorListener){
         mSensorManager = (SensorManager) context.getSystemService(context.SENSOR_SERVICE);
@@ -40,7 +40,7 @@ public class SensorManagement implements SensorEventListener{
     }
 
     private void registerSensor(Sensor sensor){
-        mSensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_UI);
+        mSensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
     public void registerSensors(ArrayList<Integer> requiredSensors){
@@ -65,7 +65,6 @@ public class SensorManagement implements SensorEventListener{
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor.getType() != Sensor.TYPE_ACCELEROMETER && event.sensor.getType() != Sensor.TYPE_GYROSCOPE)
             return;
-
 
         switch(event.sensor.getType()) {
             case Sensor.TYPE_ACCELEROMETER:

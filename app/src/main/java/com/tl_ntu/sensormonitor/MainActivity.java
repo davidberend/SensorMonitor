@@ -1,7 +1,6 @@
 package com.tl_ntu.sensormonitor;
 
 import android.hardware.Sensor;
-import android.hardware.SensorEvent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -11,7 +10,7 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements SensorListener{
+public class MainActivity extends AppCompatActivity{
 
     //=========================================
     // Components
@@ -34,14 +33,6 @@ public class MainActivity extends AppCompatActivity implements SensorListener{
     //-----------------------------------------
     Button buttonRecord;
 
-    // Test coordinates components
-    TextView textAccelerometerX;
-    TextView textAccelerometerY;
-    TextView textAccelerometerZ;
-    TextView textGyroscopeX;
-    TextView textGyroscopeY;
-    TextView textGyroscopeZ;
-
     //=========================================
     // Variables
     //=========================================
@@ -49,9 +40,7 @@ public class MainActivity extends AppCompatActivity implements SensorListener{
     ArrayList<View> sensorSwitches;
     ArrayList<Integer> requiredSensors;
     //-----------------------------------------
-    SensorManagement sensorManagement;
-    //-----------------------------------------
-    //DataManagement dataManagement;
+    DataManagement dataManagement;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,28 +52,13 @@ public class MainActivity extends AppCompatActivity implements SensorListener{
 
         buttonRecord.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-            if(buttonRecord.getText() == getResources().getString(R.string.recordButtonStart)){
-
-                buttonRecord.setText(getResources().getString(R.string.recordButtonStop));
-                disableComponents();
-                getRequiredSensors();
-                sensorManagement.registerSensors(requiredSensors);
-                //dataManagement.read();
-
-            }
-            else {
-
-                //dataManagement.save();
-                sensorManagement.unregisterSensors();
-                enableComponents();
-                buttonRecord.setText(getResources().getString(R.string.recordButtonStart));
-            }
+                measureAction();
             }
         });
     }
 
     //=========================================
-    // Class Management
+    // Initialization
     //=========================================
     private void initializeComponents(){
 
@@ -105,13 +79,6 @@ public class MainActivity extends AppCompatActivity implements SensorListener{
         switchGPS              = (Switch) findViewById(R.id.switchGPS);
         //-----------------------------------------
         buttonRecord           = (Button) findViewById(R.id.buttonRecord);
-        //-----------------------------------------
-        textAccelerometerX    = (TextView) findViewById(R.id.textAccelerometerX);
-        textAccelerometerY    = (TextView) findViewById(R.id.textAccelerometerY);
-        textAccelerometerZ    = (TextView) findViewById(R.id.textAccelerometerZ);
-        textGyroscopeX        = (TextView) findViewById(R.id.textGyroscopeX);
-        textGyroscopeY        = (TextView) findViewById(R.id.textGyroscopeY);
-        textGyroscopeZ        = (TextView) findViewById(R.id.textGyroscopeZ);
     }
 
     private void initializeVariables(){
@@ -135,10 +102,32 @@ public class MainActivity extends AppCompatActivity implements SensorListener{
 
         requiredSensors = new ArrayList<>();
 
-        sensorManagement = new SensorManagement(this, this);
-        //dataManagement = new DataManagement(requiredSensors);
+        dataManagement = new DataManagement(this);
     }
 
+    //=========================================
+    // Measure process
+    //=========================================
+    private void measureAction(){
+        if(buttonRecord.getText() == getResources().getString(R.string.recordButtonStart)){
+
+            buttonRecord.setText(getResources().getString(R.string.recordButtonStop));
+            disableComponents();
+            getRequiredSensors();
+            dataManagement.read(requiredSensors);
+
+        }
+        else {
+
+            dataManagement.save();
+            enableComponents();
+            buttonRecord.setText(getResources().getString(R.string.recordButtonStart));
+        }
+    }
+
+    //=========================================
+    // Measure utils
+    //=========================================
     private void disableComponents(){
         for(View s : sensorSwitches){
             s.setEnabled(false);
@@ -171,12 +160,5 @@ public class MainActivity extends AppCompatActivity implements SensorListener{
 
         if(switchGyroscope.isChecked())
             requiredSensors.add(Sensor.TYPE_GYROSCOPE);
-    }
-
-    @Override
-    public void onValueChange(SensorEvent event) {
-        textAccelerometerX.setText(Float.toString(sensorManagement.getAccelerometerX()));
-        textAccelerometerY.setText(Float.toString(sensorManagement.getAccelerometerY()));
-        textAccelerometerZ.setText(Float.toString(sensorManagement.getAccelerometerZ()));
     }
 }
