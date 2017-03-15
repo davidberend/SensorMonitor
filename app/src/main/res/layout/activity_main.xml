@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
-    android:layout_height="wrap_content" >
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -181,21 +181,6 @@
                 android:layout_marginLeft="20dp"
                 android:layout_marginRight="20dp" >
 
-                <TextView
-                    android:id="@+id/textGPS"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="GPS"
-                    android:textSize="20sp"
-                    android:textColor="#424242"
-                    android:layout_alignParentLeft="true"
-                    android:layout_centerVertical="true" />
-
-                <Switch
-                    android:id="@+id/switchGPS"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentRight="true" />
 
             </RelativeLayout>
             <RelativeLayout

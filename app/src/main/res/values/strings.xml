@@ -2,4 +2,5 @@
     <string name="app_name">SensorMonitor</string>
     <string name="recordButtonStart">START REC</string>
     <string name="recordButtonStop">STOP REC</string>
+    <string name="records">records</string>
 </resources>

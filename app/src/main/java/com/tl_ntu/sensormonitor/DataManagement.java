@@ -4,27 +4,13 @@ import android.content.Context;
 import android.hardware.SensorEvent;
 import android.hardware.Sensor;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.google.gson.Gson;
 import com.tl_ntu.sensormonitor.pobjects.*;
-
-/*
-    Sensor implementation work flow
-    - set requirement bool
-    - set sensor object
-    - set sensor data count
-    - set sensor data list
-    - init comp in constructor
-    - reset in disable
- */
 
 class DataManagement implements SensorListener{
 
@@ -74,12 +60,6 @@ class DataManagement implements SensorListener{
     com.tl_ntu.sensormonitor.pobjects.Sensor ambientLight;
     private int ambientLightDataID;
     private List<Data> ambientLightData;
-    
-    // GPS
-    private boolean gpsState;
-    com.tl_ntu.sensormonitor.pobjects.Sensor gps;
-    private int gpsDataID;
-    private List<Data> gpsData;
 
     public DataManagement(Context context){
         this.context = context;
@@ -93,8 +73,6 @@ class DataManagement implements SensorListener{
         magnetometerData = new ArrayList<Data>();
         barometerData = new ArrayList<Data>();
         ambientLightData = new ArrayList<Data>();
-        gpsData = new ArrayList<Data>();
-
     }
 
 
@@ -152,13 +130,6 @@ class DataManagement implements SensorListener{
             ambientLight.setName("ambientLight");
             ambientLight.setDataentries(ambientLightData);
             record.getSensors().add(ambientLight);
-        }
-
-        if(gpsState) {
-            gps = new com.tl_ntu.sensormonitor.pobjects.Sensor();
-            gps.setName("gps");
-            gps.setDataentries(gpsData);
-            record.getSensors().add(gps);
         }
 
         // Start recieving Data

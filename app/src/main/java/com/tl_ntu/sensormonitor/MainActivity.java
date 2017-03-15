@@ -1,9 +1,14 @@
 package com.tl_ntu.sensormonitor;
 
+import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Switch;
@@ -11,7 +16,11 @@ import android.widget.TextView;
 
 import org.w3c.dom.Text;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
@@ -25,7 +34,6 @@ public class MainActivity extends AppCompatActivity {
     TextView textMagnetometer;
     TextView textBarometer;
     TextView textAmbientLight;
-    TextView textGPS;
     //-----------------------------------------
     Switch switchAccelerometer;
     Switch switchGyroscope;
@@ -33,7 +41,6 @@ public class MainActivity extends AppCompatActivity {
     Switch switchMagnetometer;
     Switch switchBarometer;
     Switch switchAmbientLight;
-    Switch switchGPS;
     //-----------------------------------------
     Button buttonRecord;
     //-----------------------------------------
@@ -48,9 +55,7 @@ public class MainActivity extends AppCompatActivity {
     DataManagement dataManagement;
     //-----------------------------------------
     DataAccess dataAccess;
-    int count = 0;
-    String test;
-    final String fileName = "records";
+    String fileName = "records";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,8 +71,6 @@ public class MainActivity extends AppCompatActivity {
                 measureAction();
             }
         });
-        File tmpFile = this.getApplicationContext().getFileStreamPath("records");
-        tmpFile.delete();
     }
 
     //=========================================
@@ -81,7 +84,6 @@ public class MainActivity extends AppCompatActivity {
         textMagnetometer     = (TextView) findViewById(R.id.textMagnetometer);
         textBarometer        = (TextView) findViewById(R.id.textBarometer);
         textAmbientLight     = (TextView) findViewById(R.id.textAmbientLight);
-        textGPS              = (TextView) findViewById(R.id.textGPS);
         //-----------------------------------------
         switchAccelerometer    = (Switch) findViewById(R.id.switchAccelerometer);
         switchGyroscope        = (Switch) findViewById(R.id.switchGyroscope);
@@ -89,7 +91,6 @@ public class MainActivity extends AppCompatActivity {
         switchMagnetometer     = (Switch) findViewById(R.id.switchMagnetometer);
         switchBarometer         = (Switch) findViewById(R.id.switchBarometer);
         switchAmbientLight     = (Switch) findViewById(R.id.switchAmbientLight);
-        switchGPS              = (Switch) findViewById(R.id.switchGPS);
         //-----------------------------------------
         buttonRecord           = (Button) findViewById(R.id.buttonRecord);
         //-----------------------------------------
@@ -103,7 +104,6 @@ public class MainActivity extends AppCompatActivity {
         sensorTextViews.add(textMagnetometer);
         sensorTextViews.add(textBarometer);
         sensorTextViews.add(textAmbientLight);
-        sensorTextViews.add(textGPS);
 
         sensorSwitches = new ArrayList<>();
         sensorSwitches.add(switchAccelerometer);
@@ -112,7 +112,6 @@ public class MainActivity extends AppCompatActivity {
         sensorSwitches.add(switchMagnetometer);
         sensorSwitches.add(switchBarometer);
         sensorSwitches.add(switchAmbientLight);
-        sensorSwitches.add(switchGPS);
 
         requiredSensors = new ArrayList<>();
 
@@ -133,17 +132,43 @@ public class MainActivity extends AppCompatActivity {
             dataManagement.read(requiredSensors);
         }
         else {
-            count += 1;
             dataManagement.save();
             enableComponents();
             buttonRecord.setText(getResources().getString(R.string.recordButtonStart));
-
-            if ( count == 2){
-                test = dataAccess.loadFileFromStorage(fileName);
-            }
         }
     }
 
+    private void demoAction(){
+        String file = "not working";
+        try{
+            FileInputStream inStream = this.openFileInput(fileName);
+            InputStreamReader inputStreamReader = new InputStreamReader(inStream);
+            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+
+            StringBuilder records = new StringBuilder();
+            String oneLine;
+            while((oneLine = bufferedReader.readLine()) != null){
+                records.append(oneLine);
+            }
+
+            bufferedReader.close();
+            inputStreamReader.close();
+            inStream.close();
+
+            file = records.toString();
+
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+        Intent intent = new Intent(getBaseContext(), ResultActivity.class);
+        intent.putExtra("FILE", file);
+        startActivity(intent);
+    }
+
+    private void demoDelete(){
+        File tmpFile = this.getApplicationContext().getFileStreamPath("records");
+        tmpFile.delete();
+    }
 
     //=========================================
     // Measure utils
@@ -194,10 +219,30 @@ public class MainActivity extends AppCompatActivity {
             requiredSensors.add(Sensor.TYPE_LIGHT);
 
     }
-/*
+
     @Override
-    public void onValueChange(SensorEvent event, int sensor) {
-        if(sensor == Sensor.TYPE_PRESSURE)
-            textAccelerometerX.setText(Float.toString(event.values[0]));
-    }*/
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_results:
+                demoAction();
+                return true;
+
+            case R.id.action_delete:
+                demoDelete();
+                return true;
+
+            default:
+                // If we got here, the user's action was not recognized.
+                // Invoke the superclass to handle it.
+                return super.onOptionsItemSelected(item);
+
+        }
+    }
 }
