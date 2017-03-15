@@ -40,39 +40,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentRight="true" />
-
-                <TextView
-                    android:id="@+id/textAccelerometerX"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="X"
-                    android:textSize="20sp"
-                    android:textColor="#424242"
-                    android:layout_alignParentTop="true"
-                    android:layout_alignParentLeft="true"
-                    android:layout_marginTop="25dp"/>
-
-                <TextView
-                    android:id="@+id/textAccelerometerY"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Y"
-                    android:textSize="20sp"
-                    android:textColor="#424242"
-                    android:layout_alignParentTop="true"
-                    android:layout_alignParentLeft="true"
-                    android:layout_marginTop="50dp" />
-
-                <TextView
-                    android:id="@+id/textAccelerometerZ"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Z"
-                    android:textSize="20sp"
-                    android:textColor="#424242"
-                    android:layout_alignParentTop="true"
-                    android:layout_alignParentLeft="true"
-                    android:layout_marginTop="75dp" />
                     
             </RelativeLayout>
             <RelativeLayout
@@ -99,39 +66,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentRight="true" />
-                
-                <TextView
-                    android:id="@+id/textGyroscopeX"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="X"
-                    android:textSize="20sp"
-                    android:textColor="#424242"
-                    android:layout_alignParentTop="true"
-                    android:layout_alignParentLeft="true"
-                    android:layout_marginTop="25dp"/>
-
-                <TextView
-                    android:id="@+id/textGyroscopeY"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Y"
-                    android:textSize="20sp"
-                    android:textColor="#424242"
-                    android:layout_alignParentTop="true"
-                    android:layout_alignParentLeft="true"
-                    android:layout_marginTop="50dp" />
-
-                <TextView
-                    android:id="@+id/textGyroscopeZ"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Z"
-                    android:textSize="20sp"
-                    android:textColor="#424242"
-                    android:layout_alignParentTop="true"
-                    android:layout_alignParentLeft="true"
-                    android:layout_marginTop="75dp" />
 
             </RelativeLayout>
             <RelativeLayout

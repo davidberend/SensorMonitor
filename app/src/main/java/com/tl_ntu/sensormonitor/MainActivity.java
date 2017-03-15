@@ -1,6 +1,7 @@
 package com.tl_ntu.sensormonitor;
 
 import android.hardware.Sensor;
+import android.hardware.SensorEvent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -8,9 +9,12 @@ import android.widget.Button;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import org.w3c.dom.Text;
+
+import java.io.File;
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity{
+public class MainActivity extends AppCompatActivity {
 
     //=========================================
     // Components
@@ -32,6 +36,7 @@ public class MainActivity extends AppCompatActivity{
     Switch switchGPS;
     //-----------------------------------------
     Button buttonRecord;
+    //-----------------------------------------
 
     //=========================================
     // Variables
@@ -41,9 +46,15 @@ public class MainActivity extends AppCompatActivity{
     ArrayList<Integer> requiredSensors;
     //-----------------------------------------
     DataManagement dataManagement;
+    //-----------------------------------------
+    DataAccess dataAccess;
+    int count = 0;
+    String test;
+    final String fileName = "records";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -55,6 +66,8 @@ public class MainActivity extends AppCompatActivity{
                 measureAction();
             }
         });
+        File tmpFile = this.getApplicationContext().getFileStreamPath("records");
+        tmpFile.delete();
     }
 
     //=========================================
@@ -74,11 +87,12 @@ public class MainActivity extends AppCompatActivity{
         switchGyroscope        = (Switch) findViewById(R.id.switchGyroscope);
         switchProximity        = (Switch) findViewById(R.id.switchProximity);
         switchMagnetometer     = (Switch) findViewById(R.id.switchMagnetometer);
-        switchBarometer        = (Switch) findViewById(R.id.switchBarometer);
+        switchBarometer         = (Switch) findViewById(R.id.switchBarometer);
         switchAmbientLight     = (Switch) findViewById(R.id.switchAmbientLight);
         switchGPS              = (Switch) findViewById(R.id.switchGPS);
         //-----------------------------------------
         buttonRecord           = (Button) findViewById(R.id.buttonRecord);
+        //-----------------------------------------
     }
 
     private void initializeVariables(){
@@ -103,6 +117,8 @@ public class MainActivity extends AppCompatActivity{
         requiredSensors = new ArrayList<>();
 
         dataManagement = new DataManagement(this);
+
+        dataAccess = new DataAccess(this);
     }
 
     //=========================================
@@ -115,15 +131,19 @@ public class MainActivity extends AppCompatActivity{
             disableComponents();
             getRequiredSensors();
             dataManagement.read(requiredSensors);
-
         }
         else {
-
+            count += 1;
             dataManagement.save();
             enableComponents();
             buttonRecord.setText(getResources().getString(R.string.recordButtonStart));
+
+            if ( count == 2){
+                test = dataAccess.loadFileFromStorage(fileName);
+            }
         }
     }
+
 
     //=========================================
     // Measure utils
@@ -160,5 +180,24 @@ public class MainActivity extends AppCompatActivity{
 
         if(switchGyroscope.isChecked())
             requiredSensors.add(Sensor.TYPE_GYROSCOPE);
+
+        if(switchProximity.isChecked())
+            requiredSensors.add(Sensor.TYPE_PROXIMITY);
+
+        if(switchMagnetometer.isChecked())
+            requiredSensors.add(Sensor.TYPE_MAGNETIC_FIELD);
+
+        if(switchBarometer.isChecked())
+            requiredSensors.add(Sensor.TYPE_PRESSURE);
+
+        if(switchAmbientLight.isChecked())
+            requiredSensors.add(Sensor.TYPE_LIGHT);
+
     }
+/*
+    @Override
+    public void onValueChange(SensorEvent event, int sensor) {
+        if(sensor == Sensor.TYPE_PRESSURE)
+            textAccelerometerX.setText(Float.toString(event.values[0]));
+    }*/
 }

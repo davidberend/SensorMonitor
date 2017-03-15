@@ -3,6 +3,13 @@ package com.tl_ntu.sensormonitor;
 import android.content.Context;
 import android.hardware.SensorEvent;
 import android.hardware.Sensor;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,12 +28,16 @@ import com.tl_ntu.sensormonitor.pobjects.*;
 
 class DataManagement implements SensorListener{
 
+    // Context from application to save file
+    Context context;
+
+    String fileName = "records";
+
     private SensorManagement sensorManagement;
 
     List<Integer> requiredSensors;
 
-    private Records records;
-    private int recordCount;
+    private Record record;
 
     // Accelerometer
     private boolean accelerometerState;
@@ -38,19 +49,52 @@ class DataManagement implements SensorListener{
     private boolean gyroscopeState;
     com.tl_ntu.sensormonitor.pobjects.Sensor gyroscope;
     private int gyroscopeDataID;
-    private Float gyroscopeX;
-    private Float gyroscopeY;
-    private Float gyroscopeZ;
+    private List<Data> gyroscopeData;
+    
+    // Proximity
+    private boolean proximityState;
+    com.tl_ntu.sensormonitor.pobjects.Sensor proximity;
+    private int proximityDataID;
+    private List<Data> proximityData;
+    
+    // Magnetometer
+    private boolean magnetometerState;
+    com.tl_ntu.sensormonitor.pobjects.Sensor magnetometer;
+    private int magnetometerDataID;
+    private List<Data> magnetometerData;
+    
+    // Barometer
+    private boolean barometerState;
+    com.tl_ntu.sensormonitor.pobjects.Sensor barometer;
+    private int barometerDataID;
+    private List<Data> barometerData;
+    
+    // Ambient Light
+    private boolean ambientLightState;
+    com.tl_ntu.sensormonitor.pobjects.Sensor ambientLight;
+    private int ambientLightDataID;
+    private List<Data> ambientLightData;
+    
+    // GPS
+    private boolean gpsState;
+    com.tl_ntu.sensormonitor.pobjects.Sensor gps;
+    private int gpsDataID;
+    private List<Data> gpsData;
 
     public DataManagement(Context context){
+        this.context = context;
         sensorManagement = new SensorManagement(context, this);
 
         requiredSensors = new ArrayList<Integer>();
 
-        records = new Records();
-        recordCount = 0;
-        
         accelerometerData = new ArrayList<Data>();
+        gyroscopeData = new ArrayList<Data>();
+        proximityData = new ArrayList<Data>();
+        magnetometerData = new ArrayList<Data>();
+        barometerData = new ArrayList<Data>();
+        ambientLightData = new ArrayList<Data>();
+        gpsData = new ArrayList<Data>();
+
     }
 
 
@@ -61,14 +105,10 @@ class DataManagement implements SensorListener{
         
         // Prepare 
         enableSensorMeasurements();
-        sensorManagement.registerSensors(requiredSensors);
 
-        // Start retrieving data
-        recordCount += 1;
-        Record record = new Record();
-        records.getRecords().add(record);
+        // Potential overwrite of previous measurement
+        record = new Record();
 
-        record.setId(Integer.toString(recordCount));
         record.setStart(Long.toString(System.currentTimeMillis()));
         
         // Add required sensors to record
@@ -78,76 +118,241 @@ class DataManagement implements SensorListener{
             accelerometer.setDataentries(accelerometerData);
             record.getSensors().add(accelerometer);
         }
-        /*
+        
         if(gyroscopeState) {
             gyroscope = new com.tl_ntu.sensormonitor.pobjects.Sensor();
             gyroscope.setName("gyroscope");
+            gyroscope.setDataentries(gyroscopeData);
             record.getSensors().add(gyroscope);
-        }*/
+        }
 
+        if(proximityState) {
+            proximity = new com.tl_ntu.sensormonitor.pobjects.Sensor();
+            proximity.setName("proximity");
+            proximity.setDataentries(proximityData);
+            record.getSensors().add(proximity);
+        }
+
+        if(magnetometerState) {
+            magnetometer = new com.tl_ntu.sensormonitor.pobjects.Sensor();
+            magnetometer.setName("magnetometer");
+            magnetometer.setDataentries(magnetometerData);
+            record.getSensors().add(magnetometer);
+        }
+
+        if(barometerState) {
+            barometer = new com.tl_ntu.sensormonitor.pobjects.Sensor();
+            barometer.setName("barometer");
+            barometer.setDataentries(barometerData);
+            record.getSensors().add(barometer);
+        }
+
+        if(ambientLightState) {
+            ambientLight = new com.tl_ntu.sensormonitor.pobjects.Sensor();
+            ambientLight.setName("ambientLight");
+            ambientLight.setDataentries(ambientLightData);
+            record.getSensors().add(ambientLight);
+        }
+
+        if(gpsState) {
+            gps = new com.tl_ntu.sensormonitor.pobjects.Sensor();
+            gps.setName("gps");
+            gps.setDataentries(gpsData);
+            record.getSensors().add(gps);
+        }
+
+        // Start recieving Data
+        sensorManagement.registerSensors(requiredSensors);
     }
     
     public void save(){
         disableSensorMeasurements();
         sensorManagement.unregisterSensors();
-        records.getRecords().get(records.getRecords().size()-1).setStop(Long.toString(System.currentTimeMillis()));
+        record.setStop(Long.toString(System.currentTimeMillis()));
 
-        Gson gson = new Gson();
-        String xyz = gson.toJson(records);
+        Gson gRecord = new Gson();
+        String jRecord = gRecord.toJson(record);
+
+        dropMeasurements();
+
+        // Check if file already exists
+        File tmpFile = context.getApplicationContext().getFileStreamPath(fileName);
+
+        FileOutputStream outputStream;
+
+        if (tmpFile.exists()){
+
+            try {
+                outputStream = context.openFileOutput(fileName, Context.MODE_APPEND);
+                outputStream.write(jRecord.getBytes());
+                outputStream.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        else {
+
+            try {
+                outputStream = context.openFileOutput(fileName, Context.MODE_PRIVATE);
+                outputStream.write(jRecord.getBytes());
+                outputStream.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
+
     @Override
-    public void onValueChange(SensorEvent event) {
-        if(accelerometerState){
-            Data data = new Data();
+    public void onValueChange(SensorEvent event, int sensor) {
+        if(sensor == Sensor.TYPE_ACCELEROMETER){
             accelerometerDataID += 1;
-            data.setId(Integer.toString(accelerometerDataID));
-            data.setTime(Long.toString(System.currentTimeMillis()));
 
-            Value accelerometerX = new Value();
-            accelerometerX.setName("x");
-            accelerometerX.setValue(Float.toString(sensorManagement.getAccelerometerX()));
+            Data data = createData(accelerometerDataID);
 
-            Value accelerometerY = new Value();
-            accelerometerY.setName("y");
-            accelerometerY.setValue(Float.toString(sensorManagement.getAccelerometerY()));
+            Value x = createValue("x", sensorManagement.getAccelerometerX());
+            Value y = createValue("y", sensorManagement.getAccelerometerY());
+            Value z = createValue("z", sensorManagement.getAccelerometerZ());
 
-            Value accelerometerZ = new Value();
-            accelerometerZ.setName("z");
-            accelerometerZ.setValue(Float.toString(sensorManagement.getAccelerometerZ()));
-
-            data.getValues().add(accelerometerX);
-            data.getValues().add(accelerometerY);
-            data.getValues().add(accelerometerZ);
+            data.getValues().add(x);
+            data.getValues().add(y);
+            data.getValues().add(z);
 
             accelerometerData.add(data);
         }
+
+        if(sensor == Sensor.TYPE_GYROSCOPE){
+            gyroscopeDataID += 1;
+
+            Data data = createData(gyroscopeDataID);
+
+            Value x = createValue("x", sensorManagement.getGyroscopeX());
+            Value y = createValue("y", sensorManagement.getGyroscopeY());
+            Value z = createValue("z", sensorManagement.getGyroscopeZ());
+
+            data.getValues().add(x);
+            data.getValues().add(y);
+            data.getValues().add(z);
+
+            gyroscopeData.add(data);
+        }
+
+        if(sensor == Sensor.TYPE_PROXIMITY){
+            proximityDataID += 1;
+
+            Data data = createData(proximityDataID);
+
+            Value x = createValue("x", sensorManagement.getProximityX());
+
+            data.getValues().add(x);
+
+            proximityData.add(data);
+        }
+
+        if(sensor == Sensor.TYPE_MAGNETIC_FIELD){
+            magnetometerDataID += 1;
+
+            Data data = createData(magnetometerDataID);
+
+            Value x = createValue("x", sensorManagement.getMagnetometerX());
+            Value y = createValue("y", sensorManagement.getMagnetometerY());
+            Value z = createValue("z", sensorManagement.getMagnetometerZ());
+
+            data.getValues().add(x);
+            data.getValues().add(y);
+            data.getValues().add(z);
+
+            magnetometerData.add(data);
+        }
+
+        if(sensor == Sensor.TYPE_PRESSURE){
+            barometerDataID += 1;
+
+            Data data = createData(barometerDataID);
+
+            Value x = createValue("x", sensorManagement.getBarometerX());
+
+            data.getValues().add(x);
+
+            barometerData.add(data);
+        }
+
+        if(sensor == Sensor.TYPE_LIGHT){
+            ambientLightDataID += 1;
+
+            Data data = createData(ambientLightDataID);
+
+            Value x = createValue("x", sensorManagement.getAmbientLightX());
+
+            data.getValues().add(x);
+
+            ambientLightData.add(data);
+        }
     }
-    /*
-    private Data method(int dataID, ){
+
+    private Data createData(int dataID){
         Data data = new Data();
-        data.setId(Integer.toString(accelerometerDataID));
+        data.setId(Integer.toString(dataID));
         data.setTime(Long.toString(System.currentTimeMillis()));
-    }*/
 
+        return data;
+    }
 
+    private Value createValue(String name, Float sensorData){
+        Value value = new Value();
+        value.setName(name);
+        value.setValue(Float.toString(sensorData));
+
+        return value;
+    }
 
     //=========================================
     // Measure utils
     //=========================================
     private void enableSensorMeasurements(){
 
+        // Reset Data ID
         accelerometerDataID = 0;
+        gyroscopeDataID = 0;
+        proximityDataID = 0;
+        magnetometerDataID = 0;
+        barometerDataID = 0;
+        ambientLightDataID = 0;
+
 
         if(requiredSensors.contains(Sensor.TYPE_ACCELEROMETER))
             accelerometerState = true;
 
         if(requiredSensors.contains(Sensor.TYPE_GYROSCOPE))
             gyroscopeState = true;
+
+        if(requiredSensors.contains(Sensor.TYPE_PROXIMITY))
+            proximityState= true;
+
+        if(requiredSensors.contains(Sensor.TYPE_MAGNETIC_FIELD))
+            magnetometerState = true;
+
+        if(requiredSensors.contains(Sensor.TYPE_PRESSURE))
+            barometerState = true;
+
+        if(requiredSensors.contains(Sensor.TYPE_LIGHT))
+            ambientLightState = true;
     }
 
     private void disableSensorMeasurements(){
         accelerometerState = false;
         gyroscopeState = false;
+        proximityState = false;
+        magnetometerState = false;
+        barometerState = false;
+        ambientLightState = false;
     }
 
+    private void dropMeasurements(){
+        accelerometerData.clear();
+        gyroscopeData.clear();
+        proximityData.clear();
+        magnetometerData.clear();
+        barometerData.clear();
+        ambientLightData.clear();
+    }
 }
