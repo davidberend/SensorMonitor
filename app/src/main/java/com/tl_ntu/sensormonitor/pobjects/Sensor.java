@@ -1,9 +1,10 @@
 package com.tl_ntu.sensormonitor.pobjects;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Sensor {
+public class Sensor implements Serializable{
     String name;
     List<Data> dataentries;
 

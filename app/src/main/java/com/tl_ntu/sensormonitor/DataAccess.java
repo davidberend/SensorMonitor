@@ -1,53 +1,58 @@
 package com.tl_ntu.sensormonitor;
 
 import android.content.Context;
-import android.widget.Toast;
+import com.tl_ntu.sensormonitor.pobjects.Records;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 public class DataAccess {
 
     Context context;
 
     public DataAccess(Context context){
-
+        this.context = context;
     }
 
-    public String loadFileFromStorage(String fileName){
-        // Check if file already exists
-        File tmpFile = context.getApplicationContext().getFileStreamPath(fileName);
-        FileOutputStream outputStream;
-        if (!tmpFile.exists()){
-            Toast.makeText(context, "No record yet", Toast.LENGTH_LONG);
-            return "No record yet";
-        }
-        try{
-            FileInputStream inStream = context.openFileInput(fileName);
-            InputStreamReader inputStreamReader = new InputStreamReader(inStream);
-            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+    public Records loadFileFromStorage(String fileName){
 
-            StringBuilder records = new StringBuilder();
-            String oneLine;
-            while((oneLine = bufferedReader.readLine()) != null){
-                records.append(oneLine);
+        Records records = new Records();
+
+        // Check existence
+        File file = context.getApplicationContext().getFileStreamPath(fileName);
+        if(file.exists()) {
+
+            // Overwrite new records instance with existing one
+            try {
+                FileInputStream fis = context.openFileInput(fileName);
+                ObjectInputStream is = new ObjectInputStream(fis);
+                records = (Records) is.readObject();
+                is.close();
+                fis.close();
+
+            } catch (Exception e) {
+                e.printStackTrace();
             }
+        }
 
-            bufferedReader.close();
-            inputStreamReader.close();
-            inStream.close();
+        // Return records either way
+        return records;
+    }
 
-            return records.toString();
+    public void saveFileToStorage(String fileName, Records records){
 
-        } catch (IOException e){
+        try{
+            FileOutputStream fos= context.openFileOutput(fileName, Context.MODE_PRIVATE);
+            ObjectOutputStream os = new ObjectOutputStream(fos);
+            os.writeObject(records);
+            os.close();
+            fos.close();
+        } catch (Exception e) {
             e.printStackTrace();
         }
-
-        return "something failed";
     }
 
 }

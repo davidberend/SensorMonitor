@@ -5,7 +5,10 @@ import android.hardware.SensorEvent;
 import android.hardware.Sensor;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,12 +20,13 @@ class DataManagement implements SensorListener{
     // Context from application to save file
     Context context;
 
-    String fileName = "records";
-
     private SensorManagement sensorManagement;
 
     List<Integer> requiredSensors;
 
+    DataAccess dataAccess;
+
+    private Records records;
     private Record record;
 
     // Accelerometer
@@ -73,22 +77,24 @@ class DataManagement implements SensorListener{
         magnetometerData = new ArrayList<Data>();
         barometerData = new ArrayList<Data>();
         ambientLightData = new ArrayList<Data>();
+
+        records = new Records();
+
+        dataAccess = new DataAccess(context);
     }
 
 
-    public void read(ArrayList<Integer> requiredSensors){
+    public void read(ArrayList<Integer> requiredSensors, String fileName){
         
         // Get relevant sensors
         this.requiredSensors = requiredSensors;
         
         // Prepare 
         enableSensorMeasurements();
-
-        // Potential overwrite of previous measurement
+        records = dataAccess.loadFileFromStorage(fileName);
         record = new Record();
+        records.getRecords().add(record);
 
-        record.setStart(Long.toString(System.currentTimeMillis()));
-        
         // Add required sensors to record
         if(accelerometerState){
             accelerometer = new com.tl_ntu.sensormonitor.pobjects.Sensor();
@@ -132,45 +138,19 @@ class DataManagement implements SensorListener{
             record.getSensors().add(ambientLight);
         }
 
-        // Start recieving Data
+        // Start receiving Data
+        record.setStart(Long.toString(System.currentTimeMillis()));
         sensorManagement.registerSensors(requiredSensors);
     }
     
-    public void save(){
+    public void save(String fileName){
         disableSensorMeasurements();
         sensorManagement.unregisterSensors();
         record.setStop(Long.toString(System.currentTimeMillis()));
 
-        Gson gRecord = new Gson();
-        String jRecord = gRecord.toJson(record);
+        dataAccess.saveFileToStorage(fileName, records);
 
         dropMeasurements();
-
-        // Check if file already exists
-        File tmpFile = context.getApplicationContext().getFileStreamPath(fileName);
-
-        FileOutputStream outputStream;
-
-        if (tmpFile.exists()){
-
-            try {
-                outputStream = context.openFileOutput(fileName, Context.MODE_APPEND);
-                outputStream.write(jRecord.getBytes());
-                outputStream.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        else {
-
-            try {
-                outputStream = context.openFileOutput(fileName, Context.MODE_PRIVATE);
-                outputStream.write(jRecord.getBytes());
-                outputStream.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
     }
 
     @Override

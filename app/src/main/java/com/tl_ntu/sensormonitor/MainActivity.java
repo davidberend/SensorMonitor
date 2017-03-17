@@ -2,10 +2,8 @@ package com.tl_ntu.sensormonitor;
 
 import android.content.Intent;
 import android.hardware.Sensor;
-import android.hardware.SensorEvent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -14,7 +12,9 @@ import android.widget.Button;
 import android.widget.Switch;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.tl_ntu.sensormonitor.pobjects.Records;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
     DataManagement dataManagement;
     //-----------------------------------------
     DataAccess dataAccess;
-    String fileName = "records";
+    String fileName = "records.ser";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -129,44 +129,29 @@ public class MainActivity extends AppCompatActivity {
             buttonRecord.setText(getResources().getString(R.string.recordButtonStop));
             disableComponents();
             getRequiredSensors();
-            dataManagement.read(requiredSensors);
+            dataManagement.read(requiredSensors, fileName);
         }
         else {
-            dataManagement.save();
+            dataManagement.save(fileName);
             enableComponents();
             buttonRecord.setText(getResources().getString(R.string.recordButtonStart));
         }
     }
 
     private void demoAction(){
-        String file = "not working";
-        try{
-            FileInputStream inStream = this.openFileInput(fileName);
-            InputStreamReader inputStreamReader = new InputStreamReader(inStream);
-            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
 
-            StringBuilder records = new StringBuilder();
-            String oneLine;
-            while((oneLine = bufferedReader.readLine()) != null){
-                records.append(oneLine);
-            }
+        Records records = dataAccess.loadFileFromStorage(fileName);
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        String prettyJRecord = gson.toJson(records);
 
-            bufferedReader.close();
-            inputStreamReader.close();
-            inStream.close();
-
-            file = records.toString();
-
-        } catch (IOException e){
-            e.printStackTrace();
-        }
         Intent intent = new Intent(getBaseContext(), ResultActivity.class);
-        intent.putExtra("FILE", file);
+        intent.putExtra("RECORDS", prettyJRecord);
         startActivity(intent);
+
     }
 
     private void demoDelete(){
-        File tmpFile = this.getApplicationContext().getFileStreamPath("records");
+        File tmpFile = this.getApplicationContext().getFileStreamPath(fileName);
         tmpFile.delete();
     }
 

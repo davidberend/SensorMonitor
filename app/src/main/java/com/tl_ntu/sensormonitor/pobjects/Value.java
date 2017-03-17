@@ -1,6 +1,8 @@
 package com.tl_ntu.sensormonitor.pobjects;
 
-public class Value {
+import java.io.Serializable;
+
+public class Value implements Serializable{
     String name;
     String value;
 
