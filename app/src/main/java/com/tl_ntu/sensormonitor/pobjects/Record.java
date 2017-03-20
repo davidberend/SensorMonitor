@@ -9,9 +9,11 @@ public class Record implements Serializable{
     String start;
     String stop;
     List<Sensor> sensors;
+    List<Press> presses;
 
     public Record(){
         sensors = new ArrayList<Sensor>();
+        presses = new ArrayList<Press>();
     }
 
     public String getStart() {
@@ -32,5 +34,9 @@ public class Record implements Serializable{
 
     public List<Sensor> getSensors() {
         return sensors;
+    }
+
+    public List<Press> getPresses() {
+        return presses;
     }
 }

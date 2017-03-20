@@ -24,5 +24,6 @@
                 android:value="com.tl_ntu.sensormonitor.MainActivity" />
         </activity>
     </application>
-
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
 </manifest>

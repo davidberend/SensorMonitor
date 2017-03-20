@@ -2,6 +2,7 @@ package com.tl_ntu.sensormonitor;
 
 import android.content.Intent;
 import android.hardware.Sensor;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -11,16 +12,13 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.tl_ntu.sensormonitor.pobjects.Records;
-
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
@@ -44,12 +42,24 @@ public class MainActivity extends AppCompatActivity {
     //-----------------------------------------
     Button buttonRecord;
     //-----------------------------------------
+    Button button1;
+    Button button2;
+    Button button3;
+    Button button4;
+    Button button5;
+    Button button6;
+    Button button7;
+    Button button8;
+    Button button9;
+    Button button0;
+    //-----------------------------------------
 
     //=========================================
     // Variables
     //=========================================
     ArrayList<View> sensorTextViews;
     ArrayList<View> sensorSwitches;
+    ArrayList<View> pwButtons;
     ArrayList<Integer> requiredSensors;
     //-----------------------------------------
     DataManagement dataManagement;
@@ -66,13 +76,89 @@ public class MainActivity extends AppCompatActivity {
         initializeComponents();
         initializeVariables();
 
+        hidePWBUttons();
+
         buttonRecord.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 measureAction();
             }
         });
+
+        setPWButtonActionListeners();
     }
 
+    private void setPWButtonActionListeners(){
+        button1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dataManagement.addPress(button1.getText().toString());
+            }
+        });
+
+        button2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dataManagement.addPress(button2.getText().toString());
+            }
+        });
+
+        button3.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dataManagement.addPress(button3.getText().toString());
+            }
+        });
+
+        button4.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dataManagement.addPress(button4.getText().toString());
+            }
+        });
+
+        button5.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dataManagement.addPress(button5.getText().toString());
+            }
+        });
+
+        button6.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dataManagement.addPress(button6.getText().toString());
+            }
+        });
+
+        button7.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dataManagement.addPress(button7.getText().toString());
+            }
+        });
+
+        button8.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dataManagement.addPress(button8.getText().toString());
+            }
+        });
+
+        button9.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dataManagement.addPress(button9.getText().toString());
+            }
+        });
+
+        button0.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dataManagement.addPress(button0.getText().toString());
+            }
+        });
+
+    }
     //=========================================
     // Initialization
     //=========================================
@@ -94,6 +180,17 @@ public class MainActivity extends AppCompatActivity {
         //-----------------------------------------
         buttonRecord           = (Button) findViewById(R.id.buttonRecord);
         //-----------------------------------------
+        button1                = (Button) findViewById(R.id.button1);
+        button2                = (Button) findViewById(R.id.button2);
+        button3                = (Button) findViewById(R.id.button3);
+        button4                = (Button) findViewById(R.id.button4);
+        button5                = (Button) findViewById(R.id.button5);
+        button6                = (Button) findViewById(R.id.button6);
+        button7                = (Button) findViewById(R.id.button7);
+        button8                = (Button) findViewById(R.id.button8);
+        button9                = (Button) findViewById(R.id.button9);
+        button0                = (Button) findViewById(R.id.button0);
+        //-----------------------------------------
     }
 
     private void initializeVariables(){
@@ -113,6 +210,18 @@ public class MainActivity extends AppCompatActivity {
         sensorSwitches.add(switchBarometer);
         sensorSwitches.add(switchAmbientLight);
 
+        pwButtons = new ArrayList<>();
+        pwButtons.add(button1);
+        pwButtons.add(button2);
+        pwButtons.add(button3);
+        pwButtons.add(button4);
+        pwButtons.add(button5);
+        pwButtons.add(button6);
+        pwButtons.add(button7);
+        pwButtons.add(button8);
+        pwButtons.add(button9);
+        pwButtons.add(button0);
+
         requiredSensors = new ArrayList<>();
 
         dataManagement = new DataManagement(this);
@@ -130,29 +239,61 @@ public class MainActivity extends AppCompatActivity {
             disableComponents();
             getRequiredSensors();
             dataManagement.read(requiredSensors, fileName);
+            showPWBUttons();
         }
         else {
+            hidePWBUttons();
             dataManagement.save(fileName);
             enableComponents();
             buttonRecord.setText(getResources().getString(R.string.recordButtonStart));
         }
     }
 
+    //=========================================
+    // App utils
+    //=========================================
+
     private void demoAction(){
 
         Records records = dataAccess.loadFileFromStorage(fileName);
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        String prettyJRecord = gson.toJson(records);
+        Gson gson = new Gson();
+        String jRecord = gson.toJson(records);
 
-        Intent intent = new Intent(getBaseContext(), ResultActivity.class);
-        intent.putExtra("RECORDS", prettyJRecord);
-        startActivity(intent);
+        String folder_main = "PACE";
+
+        boolean read = dataAccess.isExternalStorageReadable();
+        boolean write = dataAccess.isExternalStorageWritable();
+
+        String time = Float.toString(System.currentTimeMillis());
+        dataAccess.saveInExternalStorage(time + ".txt" , jRecord);
+
+        //File f = new File(Environment.getExternalStoragePublicDirectory(
+        //        Environment.DIRECTORY_PICTURES), folder_main);
+        //if (!f.exists()) {
+        //    f.mkdirs();
+        //}
+
+        //Intent intent = new Intent(getBaseContext(), ResultActivity.class);
+        //intent.putExtra("RECORDS", JRecord);
+        //startActivity(intent);
 
     }
 
     private void demoDelete(){
         File tmpFile = this.getApplicationContext().getFileStreamPath(fileName);
         tmpFile.delete();
+    }
+
+    private void showPWBUttons(){
+        for(View b:pwButtons){
+            b.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void hidePWBUttons() {
+        for (View b : pwButtons) {
+            b.setVisibility(View.INVISIBLE);
+        }
     }
 
     //=========================================

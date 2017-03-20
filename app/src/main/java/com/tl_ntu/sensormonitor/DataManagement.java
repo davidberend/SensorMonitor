@@ -292,6 +292,13 @@ class DataManagement implements SensorListener{
         ambientLightState = false;
     }
 
+    public void addPress(String buttonName){
+        Press press = new Press();
+        press.setButtonname(buttonName);
+        press.setTime(Long.toString(System.currentTimeMillis()));
+        record.getPresses().add(press);
+    }
+
     private void dropMeasurements(){
         accelerometerData.clear();
         gyroscopeData.clear();
