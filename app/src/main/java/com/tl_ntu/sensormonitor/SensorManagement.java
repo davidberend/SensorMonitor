@@ -8,6 +8,7 @@ import android.hardware.SensorManager;
 
 import java.util.ArrayList;
 
+//Branch test
 public class SensorManagement implements SensorEventListener{
 
     private SensorManager mSensorManager;
@@ -69,7 +70,7 @@ public class SensorManagement implements SensorEventListener{
     }
 
     public void registerSensor(Sensor sensor){
-        mSensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_FASTEST);
     }
 
     public void registerSensors(ArrayList<Integer> requiredSensors){

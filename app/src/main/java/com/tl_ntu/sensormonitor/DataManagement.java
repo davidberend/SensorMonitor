@@ -4,15 +4,9 @@ import android.content.Context;
 import android.hardware.SensorEvent;
 import android.hardware.Sensor;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.gson.Gson;
 import com.tl_ntu.sensormonitor.pobjects.*;
 
 class DataManagement implements SensorListener{
