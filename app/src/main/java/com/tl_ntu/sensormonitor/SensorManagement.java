@@ -31,7 +31,6 @@ public class SensorManagement implements SensorEventListener{
     private Float magnetometerY;
     private Float magnetometerZ;
 
-
     private Sensor barometer;
     private Float barometerX;
 

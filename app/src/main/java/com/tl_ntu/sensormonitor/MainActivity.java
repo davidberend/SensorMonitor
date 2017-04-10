@@ -2,7 +2,6 @@ package com.tl_ntu.sensormonitor;
 
 import android.content.Intent;
 import android.hardware.Sensor;
-import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -12,13 +11,16 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.tl_ntu.sensormonitor.pobjects.Records;
+
+import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
@@ -66,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
     //-----------------------------------------
     DataAccess dataAccess;
     String fileName = "records.ser";
+    int filecounter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -227,6 +230,8 @@ public class MainActivity extends AppCompatActivity {
         dataManagement = new DataManagement(this);
 
         dataAccess = new DataAccess(this);
+
+        filecounter = 0;
     }
 
     //=========================================
@@ -265,8 +270,8 @@ public class MainActivity extends AppCompatActivity {
         boolean write = dataAccess.isExternalStorageWritable();
 
         String time = Float.toString(System.currentTimeMillis());
-        dataAccess.saveInExternalStorage(time + ".txt" , jRecord);
-
+        dataAccess.saveInExternalStorage(time + filecounter + ".txt" , jRecord);
+        filecounter += 1;
         //File f = new File(Environment.getExternalStoragePublicDirectory(
         //        Environment.DIRECTORY_PICTURES), folder_main);
         //if (!f.exists()) {
