@@ -34,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
     TextView textMagnetometer;
     TextView textBarometer;
     TextView textAmbientLight;
+    TextView textBattery;
     //-----------------------------------------
     Switch switchAccelerometer;
     Switch switchGyroscope;
@@ -41,19 +42,9 @@ public class MainActivity extends AppCompatActivity {
     Switch switchMagnetometer;
     Switch switchBarometer;
     Switch switchAmbientLight;
+    Switch switchBattery;
     //-----------------------------------------
     Button buttonRecord;
-    //-----------------------------------------
-    Button button1;
-    Button button2;
-    Button button3;
-    Button button4;
-    Button button5;
-    Button button6;
-    Button button7;
-    Button button8;
-    Button button9;
-    Button button0;
     //-----------------------------------------
 
     //=========================================
@@ -61,7 +52,6 @@ public class MainActivity extends AppCompatActivity {
     //=========================================
     ArrayList<View> sensorTextViews;
     ArrayList<View> sensorSwitches;
-    ArrayList<View> pwButtons;
     ArrayList<Integer> requiredSensors;
     //-----------------------------------------
     DataManagement dataManagement;
@@ -79,89 +69,14 @@ public class MainActivity extends AppCompatActivity {
         initializeComponents();
         initializeVariables();
 
-        hidePWBUttons();
-
         buttonRecord.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 measureAction();
             }
         });
-
-        setPWButtonActionListeners();
     }
 
-    private void setPWButtonActionListeners(){
-        button1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dataManagement.addPress(button1.getText().toString());
-            }
-        });
 
-        button2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dataManagement.addPress(button2.getText().toString());
-            }
-        });
-
-        button3.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dataManagement.addPress(button3.getText().toString());
-            }
-        });
-
-        button4.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dataManagement.addPress(button4.getText().toString());
-            }
-        });
-
-        button5.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dataManagement.addPress(button5.getText().toString());
-            }
-        });
-
-        button6.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dataManagement.addPress(button6.getText().toString());
-            }
-        });
-
-        button7.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dataManagement.addPress(button7.getText().toString());
-            }
-        });
-
-        button8.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dataManagement.addPress(button8.getText().toString());
-            }
-        });
-
-        button9.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dataManagement.addPress(button9.getText().toString());
-            }
-        });
-
-        button0.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dataManagement.addPress(button0.getText().toString());
-            }
-        });
-
-    }
     //=========================================
     // Initialization
     //=========================================
@@ -173,26 +88,17 @@ public class MainActivity extends AppCompatActivity {
         textMagnetometer     = (TextView) findViewById(R.id.textMagnetometer);
         textBarometer        = (TextView) findViewById(R.id.textBarometer);
         textAmbientLight     = (TextView) findViewById(R.id.textAmbientLight);
+        textBattery          = (TextView) findViewById(R.id.textBattery);
         //-----------------------------------------
         switchAccelerometer    = (Switch) findViewById(R.id.switchAccelerometer);
         switchGyroscope        = (Switch) findViewById(R.id.switchGyroscope);
         switchProximity        = (Switch) findViewById(R.id.switchProximity);
         switchMagnetometer     = (Switch) findViewById(R.id.switchMagnetometer);
-        switchBarometer         = (Switch) findViewById(R.id.switchBarometer);
+        switchBarometer        = (Switch) findViewById(R.id.switchBarometer);
         switchAmbientLight     = (Switch) findViewById(R.id.switchAmbientLight);
+        switchBattery          = (Switch) findViewById(R.id.switchBattery);
         //-----------------------------------------
         buttonRecord           = (Button) findViewById(R.id.buttonRecord);
-        //-----------------------------------------
-        button1                = (Button) findViewById(R.id.button1);
-        button2                = (Button) findViewById(R.id.button2);
-        button3                = (Button) findViewById(R.id.button3);
-        button4                = (Button) findViewById(R.id.button4);
-        button5                = (Button) findViewById(R.id.button5);
-        button6                = (Button) findViewById(R.id.button6);
-        button7                = (Button) findViewById(R.id.button7);
-        button8                = (Button) findViewById(R.id.button8);
-        button9                = (Button) findViewById(R.id.button9);
-        button0                = (Button) findViewById(R.id.button0);
         //-----------------------------------------
     }
 
@@ -204,6 +110,7 @@ public class MainActivity extends AppCompatActivity {
         sensorTextViews.add(textMagnetometer);
         sensorTextViews.add(textBarometer);
         sensorTextViews.add(textAmbientLight);
+        sensorTextViews.add(textBattery);
 
         sensorSwitches = new ArrayList<>();
         sensorSwitches.add(switchAccelerometer);
@@ -212,18 +119,7 @@ public class MainActivity extends AppCompatActivity {
         sensorSwitches.add(switchMagnetometer);
         sensorSwitches.add(switchBarometer);
         sensorSwitches.add(switchAmbientLight);
-
-        pwButtons = new ArrayList<>();
-        pwButtons.add(button1);
-        pwButtons.add(button2);
-        pwButtons.add(button3);
-        pwButtons.add(button4);
-        pwButtons.add(button5);
-        pwButtons.add(button6);
-        pwButtons.add(button7);
-        pwButtons.add(button8);
-        pwButtons.add(button9);
-        pwButtons.add(button0);
+        sensorSwitches.add(switchBattery);
 
         requiredSensors = new ArrayList<>();
 
@@ -244,10 +140,8 @@ public class MainActivity extends AppCompatActivity {
             disableComponents();
             getRequiredSensors();
             dataManagement.read(requiredSensors, fileName);
-            showPWBUttons();
         }
         else {
-            hidePWBUttons();
             dataManagement.save(fileName);
             enableComponents();
             buttonRecord.setText(getResources().getString(R.string.recordButtonStart));
@@ -287,18 +181,6 @@ public class MainActivity extends AppCompatActivity {
     private void demoDelete(){
         File tmpFile = this.getApplicationContext().getFileStreamPath(fileName);
         tmpFile.delete();
-    }
-
-    private void showPWBUttons(){
-        for(View b:pwButtons){
-            b.setVisibility(View.VISIBLE);
-        }
-    }
-
-    private void hidePWBUttons() {
-        for (View b : pwButtons) {
-            b.setVisibility(View.INVISIBLE);
-        }
     }
 
     //=========================================
@@ -348,6 +230,9 @@ public class MainActivity extends AppCompatActivity {
 
         if(switchAmbientLight.isChecked())
             requiredSensors.add(Sensor.TYPE_LIGHT);
+
+        if(switchBattery.isChecked())
+            requiredSensors.add(Constants.TYPE_BATTERY);
 
     }
 

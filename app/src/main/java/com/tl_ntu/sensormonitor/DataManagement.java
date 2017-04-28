@@ -4,8 +4,16 @@ import android.content.Context;
 import android.hardware.SensorEvent;
 import android.hardware.Sensor;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.lang.reflect.Array;
+import java.lang.reflect.InvocationHandler;
 import java.util.ArrayList;
+import java.util.Dictionary;
 import java.util.List;
+import java.util.Random;
 
 import com.tl_ntu.sensormonitor.pobjects.*;
 
@@ -59,6 +67,18 @@ class DataManagement implements SensorListener{
     private int ambientLightDataID;
     private List<Data> ambientLightData;
 
+    // Battery
+    private boolean batteryState;
+    com.tl_ntu.sensormonitor.pobjects.Sensor battery;
+    private int batteryDataID;
+    private List<Data> batteryData;
+    // Battery Utils
+    private RandomAccessFile raf;
+    private ArrayList<String> rawBatteryData;
+    private ArrayList<Long> rawBatteryTimes;
+
+
+
     public DataManagement(Context context){
         this.context = context;
         sensorManagement = new SensorManagement(context, this);
@@ -71,6 +91,9 @@ class DataManagement implements SensorListener{
         magnetometerData = new ArrayList<Data>();
         barometerData = new ArrayList<Data>();
         ambientLightData = new ArrayList<Data>();
+        batteryData = new ArrayList<Data>();
+        rawBatteryData = new ArrayList<String>();
+        rawBatteryTimes = new ArrayList<Long>();
 
         records = new Records();
 
@@ -132,19 +155,62 @@ class DataManagement implements SensorListener{
             record.getSensors().add(ambientLight);
         }
 
+        if(batteryState) {
+            battery = new com.tl_ntu.sensormonitor.pobjects.Sensor();
+            battery.setName("battery");
+            battery.setDataentries(batteryData);
+            record.getSensors().add(battery);
+            try {
+                raf = new RandomAccessFile(new File(Constants.SYS_CLASS_CURRENT_NOW), "r");
+                recordBattery();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
+
         // Start receiving Data
         record.setStart(Long.toString(System.currentTimeMillis()));
         sensorManagement.registerSensors(requiredSensors);
     }
-    
+
     public void save(String fileName){
-        disableSensorMeasurements();
+        if(batteryState) unregisterBattery();
         sensorManagement.unregisterSensors();
+        disableSensorMeasurements();
         record.setStop(Long.toString(System.currentTimeMillis()));
 
         dataAccess.saveFileToStorage(fileName, records);
 
         dropMeasurements();
+    }
+
+    private void unregisterBattery(){
+        try {
+            batteryState = false;
+            raf.close();
+            saveBatteryData();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void recordBattery() throws IOException {
+
+        /*
+
+        while(batteryState){
+            raf.seek(0);
+            rawBatteryData.add(raf.readLine());
+            rawBatteryTimes.add(System.currentTimeMillis());
+        }
+        */
+        for(int i = 0; i < 2000; i++){
+            raf.seek(0);
+            rawBatteryData.add(raf.readLine());
+            rawBatteryTimes.add(System.currentTimeMillis());
+        }
+
     }
 
     @Override
@@ -234,6 +300,18 @@ class DataManagement implements SensorListener{
         }
     }
 
+    private void saveBatteryData(){
+        for (String rawData : rawBatteryData){
+            batteryDataID += 1;
+            Data data = new Data();
+            data.setId(Integer.toString(batteryDataID));
+            data.setTime(Long.toString(rawBatteryTimes.get(rawBatteryData.indexOf(rawData))));
+            Value amp = createValue("amp", Float.parseFloat(rawData));
+            data.getValues().add(amp);
+            batteryData.add(data);
+        }
+    }
+
     private Data createData(int dataID){
         Data data = new Data();
         data.setId(Integer.toString(dataID));
@@ -262,6 +340,7 @@ class DataManagement implements SensorListener{
         magnetometerDataID = 0;
         barometerDataID = 0;
         ambientLightDataID = 0;
+        batteryDataID = 0;
 
 
         if(requiredSensors.contains(Sensor.TYPE_ACCELEROMETER))
@@ -281,6 +360,9 @@ class DataManagement implements SensorListener{
 
         if(requiredSensors.contains(Sensor.TYPE_LIGHT))
             ambientLightState = true;
+
+        if(requiredSensors.contains(Constants.TYPE_BATTERY))
+            batteryState = true;
     }
 
     private void disableSensorMeasurements(){
@@ -290,13 +372,7 @@ class DataManagement implements SensorListener{
         magnetometerState = false;
         barometerState = false;
         ambientLightState = false;
-    }
-
-    public void addPress(String buttonName){
-        Press press = new Press();
-        press.setButtonname(buttonName);
-        press.setTime(Long.toString(System.currentTimeMillis()));
-        record.getPresses().add(press);
+        batteryState = false;
     }
 
     private void dropMeasurements(){
@@ -306,5 +382,6 @@ class DataManagement implements SensorListener{
         magnetometerData.clear();
         barometerData.clear();
         ambientLightData.clear();
+        batteryData.clear();
     }
 }

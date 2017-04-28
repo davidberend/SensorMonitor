@@ -6,7 +6,21 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
+import java.io.BufferedReader;
+import java.io.EOFException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
+
+import static com.tl_ntu.sensormonitor.Constants.SYS_CLASS_CAPACITY;
+import static com.tl_ntu.sensormonitor.Constants.SYS_CLASS_CURRENT_NOW;
+import static com.tl_ntu.sensormonitor.Constants.SYS_CLASS_TEMP;
+import static com.tl_ntu.sensormonitor.Constants.SYS_CLASS_VOLTAGE_NOW;
 
 //Branch test
 public class SensorManagement implements SensorEventListener{
@@ -37,6 +51,20 @@ public class SensorManagement implements SensorEventListener{
     private Sensor ambientLight;
     private Float ambientLightX;
 
+    private boolean battery;
+    private Float batteryAmp;
+    private Float batteryVol;
+    private Float batteryLev;
+    private Float batteryTmp;
+    private File fileAmp = new File(SYS_CLASS_CURRENT_NOW);
+    RandomAccessFile raf;
+    int lastValue = 0;
+    private File fileVol = new File(SYS_CLASS_VOLTAGE_NOW);
+    private File fileLev = new File(SYS_CLASS_CAPACITY);
+    private File fileTmp = new File(SYS_CLASS_TEMP);
+
+
+
     private SensorListener sensorListener;
 
     public SensorManagement(Context context, SensorListener sensorListener){
@@ -48,6 +76,7 @@ public class SensorManagement implements SensorEventListener{
         accelerometerX = 0.0f;
         accelerometerY = 0.0f;
         accelerometerZ = 0.0f;
+
         gyroscope  = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
         gyroscopeX = 0.0f;
         gyroscopeY = 0.0f;
@@ -66,6 +95,12 @@ public class SensorManagement implements SensorEventListener{
 
         ambientLight = mSensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
         ambientLightX = 0.0f;
+
+        battery = false;
+        batteryAmp = 0.0f;
+        batteryVol = 0.0f;
+        batteryLev = 0.0f;
+        batteryTmp = 0.0f;
     }
 
     public void registerSensor(Sensor sensor){
@@ -94,12 +129,28 @@ public class SensorManagement implements SensorEventListener{
                 case Sensor.TYPE_LIGHT:
                     registerSensor(ambientLight);
                     break;
+                case Constants.TYPE_BATTERY:
+                    battery = true;
+                    try {
+                        raf = new RandomAccessFile(fileAmp, "r");
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                    break;
             }
         }
     }
 
     public void unregisterSensors(){
+        if(battery) {
+            try {
+                raf.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
         mSensorManager.unregisterListener(this);
+        battery = false;
     }
 
     @Override
@@ -135,6 +186,7 @@ public class SensorManagement implements SensorEventListener{
             case Sensor.TYPE_PRESSURE:
                 barometerX = event.values[0];
                 sensorListener.onValueChange(event, Sensor.TYPE_PRESSURE);
+
                 break;
 
             case Sensor.TYPE_LIGHT:
@@ -197,4 +249,6 @@ public class SensorManagement implements SensorEventListener{
     public Float getAmbientLightX() {
         return ambientLightX;
     }
+
+
 }
