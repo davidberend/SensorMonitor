@@ -11,8 +11,15 @@ import java.io.RandomAccessFile;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationHandler;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Dictionary;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 
 import com.tl_ntu.sensormonitor.pobjects.*;
@@ -73,11 +80,8 @@ class DataManagement implements SensorListener{
     private int batteryDataID;
     private List<Data> batteryData;
     // Battery Utils
-    private RandomAccessFile raf;
-    private ArrayList<String> rawBatteryData;
-    private ArrayList<Long> rawBatteryTimes;
-
-
+    BatteryMeasurement batteryMeasurement;
+    Encryption encryption;
 
     public DataManagement(Context context){
         this.context = context;
@@ -92,12 +96,11 @@ class DataManagement implements SensorListener{
         barometerData = new ArrayList<Data>();
         ambientLightData = new ArrayList<Data>();
         batteryData = new ArrayList<Data>();
-        rawBatteryData = new ArrayList<String>();
-        rawBatteryTimes = new ArrayList<Long>();
 
         records = new Records();
 
         dataAccess = new DataAccess(context);
+
     }
 
 
@@ -160,18 +163,18 @@ class DataManagement implements SensorListener{
             battery.setName("battery");
             battery.setDataentries(batteryData);
             record.getSensors().add(battery);
-            try {
-                raf = new RandomAccessFile(new File(Constants.SYS_CLASS_CURRENT_NOW), "r");
-                recordBattery();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
         }
 
         // Start receiving Data
         record.setStart(Long.toString(System.currentTimeMillis()));
         sensorManagement.registerSensors(requiredSensors);
+
+        if(batteryState){
+            Thread measure = new Thread(batteryMeasurement = new BatteryMeasurement());
+            Thread encrypt = new Thread( encryption = new Encryption());
+            encryption.run();
+            measure.run();
+        }
     }
 
     public void save(String fileName){
@@ -186,32 +189,12 @@ class DataManagement implements SensorListener{
     }
 
     private void unregisterBattery(){
-        try {
-            batteryState = false;
-            raf.close();
-            saveBatteryData();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
-    private void recordBattery() throws IOException {
-
-        /*
-
-        while(batteryState){
-            raf.seek(0);
-            rawBatteryData.add(raf.readLine());
-            rawBatteryTimes.add(System.currentTimeMillis());
-        }
-        */
-        for(int i = 0; i < 2000; i++){
-            raf.seek(0);
-            rawBatteryData.add(raf.readLine());
-            rawBatteryTimes.add(System.currentTimeMillis());
-        }
+        batteryState = false;
+        saveBatteryData();
 
     }
+
 
     @Override
     public void onValueChange(SensorEvent event, int sensor) {
@@ -301,16 +284,59 @@ class DataManagement implements SensorListener{
     }
 
     private void saveBatteryData(){
-        for (String rawData : rawBatteryData){
+
+        ArrayList<String> rawData  = batteryMeasurement.getRawData();
+        ArrayList<Long> rawTimes = batteryMeasurement.getRawTimes();
+
+        ArrayList<Long> longData = new ArrayList<>();
+        for ( String data : rawData){
+            Long ldata = Long.parseLong(data);
+            longData.add(ldata);
+        }
+
+        ArrayList<ArrayList<Long>> returnLists = doInsertionSort(rawTimes, longData);
+
+        rawTimes = returnLists.get(0);
+        longData = returnLists.get(1);
+
+        for (int i = 0; i < rawData.size(); i++){
             batteryDataID += 1;
             Data data = new Data();
             data.setId(Integer.toString(batteryDataID));
-            data.setTime(Long.toString(rawBatteryTimes.get(rawBatteryData.indexOf(rawData))));
-            Value amp = createValue("amp", Float.parseFloat(rawData));
+            data.setTime(Long.toString(rawTimes.get(i)));
+            Value amp = createValue("amp", Float.parseFloat(Long.toString(longData.get(i))));
             data.getValues().add(amp);
             batteryData.add(data);
         }
     }
+
+    public ArrayList<ArrayList<Long>> doInsertionSort(ArrayList<Long> input, ArrayList<Long> followArr){
+
+        ArrayList<ArrayList<Long>> returnLists = new ArrayList<>();
+
+        long temp;
+        long tempfol;
+        for (int i = 1; i < input.size(); i++) {
+            for(int j = i ; j > 0 ; j--){
+                if(input.get(j) < input.get(j-1)){
+                    temp = input.get(j);
+                    tempfol = followArr.get(j);
+
+                    input.set(j, input.get(j-1));
+                    followArr.set(j, followArr.get(j-1));
+
+                    input.set(j-1, temp);
+                    followArr.set(j-1, tempfol);
+                }
+            }
+        }
+
+        returnLists.add(input);
+        returnLists.add(followArr);
+
+        return returnLists;
+    }
+
 
     private Data createData(int dataID){
         Data data = new Data();
