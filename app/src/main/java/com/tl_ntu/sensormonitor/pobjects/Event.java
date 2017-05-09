@@ -4,11 +4,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Sensor implements Serializable{
+public class Event implements Serializable{
     String name;
     List<Data> dataentries;
 
-    public Sensor(){
+    public Event(){
         dataentries = new ArrayList<Data>();
     }
 

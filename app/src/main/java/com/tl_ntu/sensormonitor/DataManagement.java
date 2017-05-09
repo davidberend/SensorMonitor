@@ -40,43 +40,43 @@ class DataManagement implements SensorListener{
 
     // Accelerometer
     private boolean accelerometerState;
-    com.tl_ntu.sensormonitor.pobjects.Sensor accelerometer;
+    com.tl_ntu.sensormonitor.pobjects.Event accelerometer;
     private int accelerometerDataID;
     private List<Data> accelerometerData;
 
     // Gyroscope
     private boolean gyroscopeState;
-    com.tl_ntu.sensormonitor.pobjects.Sensor gyroscope;
+    com.tl_ntu.sensormonitor.pobjects.Event gyroscope;
     private int gyroscopeDataID;
     private List<Data> gyroscopeData;
     
     // Proximity
     private boolean proximityState;
-    com.tl_ntu.sensormonitor.pobjects.Sensor proximity;
+    com.tl_ntu.sensormonitor.pobjects.Event proximity;
     private int proximityDataID;
     private List<Data> proximityData;
     
     // Magnetometer
     private boolean magnetometerState;
-    com.tl_ntu.sensormonitor.pobjects.Sensor magnetometer;
+    com.tl_ntu.sensormonitor.pobjects.Event magnetometer;
     private int magnetometerDataID;
     private List<Data> magnetometerData;
     
     // Barometer
     private boolean barometerState;
-    com.tl_ntu.sensormonitor.pobjects.Sensor barometer;
+    com.tl_ntu.sensormonitor.pobjects.Event barometer;
     private int barometerDataID;
     private List<Data> barometerData;
     
     // Ambient Light
     private boolean ambientLightState;
-    com.tl_ntu.sensormonitor.pobjects.Sensor ambientLight;
+    com.tl_ntu.sensormonitor.pobjects.Event ambientLight;
     private int ambientLightDataID;
     private List<Data> ambientLightData;
 
     // Battery
     private boolean batteryState;
-    com.tl_ntu.sensormonitor.pobjects.Sensor battery;
+    com.tl_ntu.sensormonitor.pobjects.Event battery;
     private int batteryDataID;
     private List<Data> batteryData;
     // Battery Utils
@@ -117,49 +117,49 @@ class DataManagement implements SensorListener{
 
         // Add required sensors to record
         if(accelerometerState){
-            accelerometer = new com.tl_ntu.sensormonitor.pobjects.Sensor();
+            accelerometer = new com.tl_ntu.sensormonitor.pobjects.Event();
             accelerometer.setName("accelerometer");
             accelerometer.setDataentries(accelerometerData);
             record.getSensors().add(accelerometer);
         }
         
         if(gyroscopeState) {
-            gyroscope = new com.tl_ntu.sensormonitor.pobjects.Sensor();
+            gyroscope = new com.tl_ntu.sensormonitor.pobjects.Event();
             gyroscope.setName("gyroscope");
             gyroscope.setDataentries(gyroscopeData);
             record.getSensors().add(gyroscope);
         }
 
         if(proximityState) {
-            proximity = new com.tl_ntu.sensormonitor.pobjects.Sensor();
+            proximity = new com.tl_ntu.sensormonitor.pobjects.Event();
             proximity.setName("proximity");
             proximity.setDataentries(proximityData);
             record.getSensors().add(proximity);
         }
 
         if(magnetometerState) {
-            magnetometer = new com.tl_ntu.sensormonitor.pobjects.Sensor();
+            magnetometer = new com.tl_ntu.sensormonitor.pobjects.Event();
             magnetometer.setName("magnetometer");
             magnetometer.setDataentries(magnetometerData);
             record.getSensors().add(magnetometer);
         }
 
         if(barometerState) {
-            barometer = new com.tl_ntu.sensormonitor.pobjects.Sensor();
+            barometer = new com.tl_ntu.sensormonitor.pobjects.Event();
             barometer.setName("barometer");
             barometer.setDataentries(barometerData);
             record.getSensors().add(barometer);
         }
 
         if(ambientLightState) {
-            ambientLight = new com.tl_ntu.sensormonitor.pobjects.Sensor();
+            ambientLight = new com.tl_ntu.sensormonitor.pobjects.Event();
             ambientLight.setName("ambientLight");
             ambientLight.setDataentries(ambientLightData);
             record.getSensors().add(ambientLight);
         }
 
         if(batteryState) {
-            battery = new com.tl_ntu.sensormonitor.pobjects.Sensor();
+            battery = new com.tl_ntu.sensormonitor.pobjects.Event();
             battery.setName("battery");
             battery.setDataentries(batteryData);
             record.getSensors().add(battery);

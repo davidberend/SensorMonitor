@@ -8,10 +8,10 @@ public class Record implements Serializable{
 
     String start;
     String stop;
-    List<Sensor> sensors;
+    List<Event> events;
 
     public Record(){
-        sensors = new ArrayList<Sensor>();
+        events = new ArrayList<Event>();
     }
 
     public String getStart() {
@@ -30,7 +30,7 @@ public class Record implements Serializable{
         this.start = start;
     }
 
-    public List<Sensor> getSensors() {
-        return sensors;
+    public List<Event> getSensors() {
+        return events;
     }
 }
