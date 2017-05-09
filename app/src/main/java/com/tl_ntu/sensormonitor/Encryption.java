@@ -7,7 +7,6 @@ class Encryption implements Runnable{
 
     }
 
-
     // Gets executed as soon as Thread is run --> Put your executable code in here
     @Override
     public void run() {

@@ -172,7 +172,7 @@ class DataManagement implements SensorListener{
         if(batteryState){
             Thread measure = new Thread(batteryMeasurement = new BatteryMeasurement());
             Thread encrypt = new Thread( encryption = new Encryption());
-            encryption.run();
+            encrypt.run();
             measure.run();
         }
     }

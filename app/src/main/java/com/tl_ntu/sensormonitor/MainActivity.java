@@ -1,6 +1,5 @@
 package com.tl_ntu.sensormonitor;
 
-import android.content.Intent;
 import android.hardware.Sensor;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -13,14 +12,9 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.tl_ntu.sensormonitor.pobjects.Records;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
@@ -50,9 +44,9 @@ public class MainActivity extends AppCompatActivity {
     //=========================================
     // Variables
     //=========================================
-    ArrayList<View> sensorTextViews;
-    ArrayList<View> sensorSwitches;
-    ArrayList<Integer> requiredSensors;
+    ArrayList<View> eventOwnerTextViews;
+    ArrayList<View> eventOwnerSwitches;
+    ArrayList<Integer> requiredEventOwners;
     //-----------------------------------------
     DataManagement dataManagement;
     //-----------------------------------------
@@ -103,25 +97,25 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initializeVariables(){
-        sensorTextViews = new ArrayList<>();
-        sensorTextViews.add(textAccelerometer);
-        sensorTextViews.add(textGyroscope);
-        sensorTextViews.add(textProximity);
-        sensorTextViews.add(textMagnetometer);
-        sensorTextViews.add(textBarometer);
-        sensorTextViews.add(textAmbientLight);
-        sensorTextViews.add(textBattery);
+        eventOwnerTextViews = new ArrayList<>();
+        eventOwnerTextViews.add(textAccelerometer);
+        eventOwnerTextViews.add(textGyroscope);
+        eventOwnerTextViews.add(textProximity);
+        eventOwnerTextViews.add(textMagnetometer);
+        eventOwnerTextViews.add(textBarometer);
+        eventOwnerTextViews.add(textAmbientLight);
+        eventOwnerTextViews.add(textBattery);
 
-        sensorSwitches = new ArrayList<>();
-        sensorSwitches.add(switchAccelerometer);
-        sensorSwitches.add(switchGyroscope);
-        sensorSwitches.add(switchProximity);
-        sensorSwitches.add(switchMagnetometer);
-        sensorSwitches.add(switchBarometer);
-        sensorSwitches.add(switchAmbientLight);
-        sensorSwitches.add(switchBattery);
+        eventOwnerSwitches = new ArrayList<>();
+        eventOwnerSwitches.add(switchAccelerometer);
+        eventOwnerSwitches.add(switchGyroscope);
+        eventOwnerSwitches.add(switchProximity);
+        eventOwnerSwitches.add(switchMagnetometer);
+        eventOwnerSwitches.add(switchBarometer);
+        eventOwnerSwitches.add(switchAmbientLight);
+        eventOwnerSwitches.add(switchBattery);
 
-        requiredSensors = new ArrayList<>();
+        requiredEventOwners = new ArrayList<>();
 
         dataManagement = new DataManagement(this);
 
@@ -139,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
             buttonRecord.setText(getResources().getString(R.string.recordButtonStop));
             disableComponents();
             getRequiredSensors();
-            dataManagement.read(requiredSensors, fileName);
+            dataManagement.read(requiredEventOwners, fileName);
         }
         else {
             dataManagement.save(fileName);
@@ -166,15 +160,6 @@ public class MainActivity extends AppCompatActivity {
         String time = Float.toString(System.currentTimeMillis());
         dataAccess.saveInExternalStorage(time + filecounter + ".txt" , jRecord);
         filecounter += 1;
-        //File f = new File(Environment.getExternalStoragePublicDirectory(
-        //        Environment.DIRECTORY_PICTURES), folder_main);
-        //if (!f.exists()) {
-        //    f.mkdirs();
-        //}
-
-        //Intent intent = new Intent(getBaseContext(), ResultActivity.class);
-        //intent.putExtra("RECORDS", JRecord);
-        //startActivity(intent);
 
     }
 
@@ -187,23 +172,23 @@ public class MainActivity extends AppCompatActivity {
     // Measure utils
     //=========================================
     private void disableComponents(){
-        for(View s : sensorSwitches){
+        for(View s : eventOwnerSwitches){
             s.setEnabled(false);
         }
 
         // color text bg light grey
-        for(View t : sensorTextViews){
+        for(View t : eventOwnerTextViews){
             t.setBackgroundColor( getResources().getColor(R.color.colorDisabled));
         }
     }
 
     private void enableComponents(){
-        for(View s : sensorSwitches){
+        for(View s : eventOwnerSwitches){
             s.setEnabled(true);
         }
 
         // color text bg white
-        for(View t : sensorTextViews){
+        for(View t : eventOwnerTextViews){
             t.setBackgroundColor( getResources().getColor(R.color.colorEnabled));
         }
     }
@@ -211,28 +196,28 @@ public class MainActivity extends AppCompatActivity {
     private void getRequiredSensors(){
 
         // drop all old data
-        requiredSensors.clear();
+        requiredEventOwners.clear();
 
         if (switchAccelerometer.isChecked())
-            requiredSensors.add(Sensor.TYPE_ACCELEROMETER);
+            requiredEventOwners.add(Sensor.TYPE_ACCELEROMETER);
 
         if(switchGyroscope.isChecked())
-            requiredSensors.add(Sensor.TYPE_GYROSCOPE);
+            requiredEventOwners.add(Sensor.TYPE_GYROSCOPE);
 
         if(switchProximity.isChecked())
-            requiredSensors.add(Sensor.TYPE_PROXIMITY);
+            requiredEventOwners.add(Sensor.TYPE_PROXIMITY);
 
         if(switchMagnetometer.isChecked())
-            requiredSensors.add(Sensor.TYPE_MAGNETIC_FIELD);
+            requiredEventOwners.add(Sensor.TYPE_MAGNETIC_FIELD);
 
         if(switchBarometer.isChecked())
-            requiredSensors.add(Sensor.TYPE_PRESSURE);
+            requiredEventOwners.add(Sensor.TYPE_PRESSURE);
 
         if(switchAmbientLight.isChecked())
-            requiredSensors.add(Sensor.TYPE_LIGHT);
+            requiredEventOwners.add(Sensor.TYPE_LIGHT);
 
         if(switchBattery.isChecked())
-            requiredSensors.add(Constants.TYPE_BATTERY);
+            requiredEventOwners.add(Constants.TYPE_BATTERY);
 
     }
 

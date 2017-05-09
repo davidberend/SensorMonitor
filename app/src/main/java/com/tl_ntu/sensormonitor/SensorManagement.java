@@ -51,18 +51,6 @@ public class SensorManagement implements SensorEventListener{
     private Sensor ambientLight;
     private Float ambientLightX;
 
-    private boolean battery;
-    private Float batteryAmp;
-    private Float batteryVol;
-    private Float batteryLev;
-    private Float batteryTmp;
-    private File fileAmp = new File(SYS_CLASS_CURRENT_NOW);
-    RandomAccessFile raf;
-    int lastValue = 0;
-    private File fileVol = new File(SYS_CLASS_VOLTAGE_NOW);
-    private File fileLev = new File(SYS_CLASS_CAPACITY);
-    private File fileTmp = new File(SYS_CLASS_TEMP);
-
 
 
     private SensorListener sensorListener;
@@ -95,12 +83,6 @@ public class SensorManagement implements SensorEventListener{
 
         ambientLight = mSensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
         ambientLightX = 0.0f;
-
-        battery = false;
-        batteryAmp = 0.0f;
-        batteryVol = 0.0f;
-        batteryLev = 0.0f;
-        batteryTmp = 0.0f;
     }
 
     public void registerSensor(Sensor sensor){
@@ -129,28 +111,14 @@ public class SensorManagement implements SensorEventListener{
                 case Sensor.TYPE_LIGHT:
                     registerSensor(ambientLight);
                     break;
-                case Constants.TYPE_BATTERY:
-                    battery = true;
-                    try {
-                        raf = new RandomAccessFile(fileAmp, "r");
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    }
-                    break;
             }
         }
     }
 
     public void unregisterSensors(){
-        if(battery) {
-            try {
-                raf.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+
         mSensorManager.unregisterListener(this);
-        battery = false;
+
     }
 
     @Override

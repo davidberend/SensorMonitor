@@ -6,11 +6,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Dictionary;
-import java.util.HashMap;
-import java.util.Map;
 
 public class BatteryMeasurement implements Runnable {
 
@@ -22,7 +18,6 @@ public class BatteryMeasurement implements Runnable {
     boolean ready;
 
     public BatteryMeasurement(){
-
         rawData = new ArrayList<>();
         rawTimes = new ArrayList<>();
         ready = false;
