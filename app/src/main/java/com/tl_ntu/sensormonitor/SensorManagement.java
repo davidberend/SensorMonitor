@@ -51,8 +51,6 @@ public class SensorManagement implements SensorEventListener{
     private Sensor ambientLight;
     private Float ambientLightX;
 
-
-
     private SensorListener sensorListener;
 
     public SensorManagement(Context context, SensorListener sensorListener){
@@ -217,6 +215,5 @@ public class SensorManagement implements SensorEventListener{
     public Float getAmbientLightX() {
         return ambientLightX;
     }
-
 
 }

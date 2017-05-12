@@ -19,10 +19,7 @@ public class BatteryMeasurement implements Runnable {
 
     boolean ready;
 
-    CyclicBarrier gate;
-
-    public BatteryMeasurement(CyclicBarrier gate){
-        this.gate = gate;
+    public BatteryMeasurement(){
 
         rawData = new ArrayList<>();
         rawTimes = new ArrayList<>();
@@ -31,13 +28,7 @@ public class BatteryMeasurement implements Runnable {
 
     @Override
     public void run() {
-        try {
-            gate.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (BrokenBarrierException e) {
-            e.printStackTrace();
-        }
+
         // Moves the current Thread into the background
         android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
 

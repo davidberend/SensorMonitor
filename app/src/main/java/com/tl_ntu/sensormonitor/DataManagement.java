@@ -37,8 +37,6 @@ class DataManagement implements SensorListener{
 
     DataAccess dataAccess;
 
-    CyclicBarrier gate = new CyclicBarrier(3);
-
     private Records records;
     private Record record;
 
@@ -85,7 +83,6 @@ class DataManagement implements SensorListener{
     private List<Data> batteryData;
     // Battery Utils
     BatteryMeasurement batteryMeasurement;
-    Encryption encryption;
 
     public DataManagement(Context context){
         this.context = context;
@@ -174,17 +171,8 @@ class DataManagement implements SensorListener{
         sensorManagement.registerSensors(requiredSensors);
 
         if(batteryState){
-            Thread measure = new Thread(batteryMeasurement = new BatteryMeasurement(gate));
-            Thread encrypt = new Thread( encryption = new Encryption(context, gate));
+            Thread measure = new Thread(batteryMeasurement = new BatteryMeasurement());
             measure.start();
-            encrypt.start();
-            try {
-                gate.await();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (BrokenBarrierException e) {
-                e.printStackTrace();
-            }
         }
     }
 
@@ -203,9 +191,6 @@ class DataManagement implements SensorListener{
 
         batteryState = false;
         saveBatteryData();
-        record.setEncryptionStart(Long.toString(encryption.getStart()));
-        record.setEncryptionStop(Long.toString(encryption.getStop()));
-
     }
 
     @Override
