@@ -2,11 +2,11 @@ package com.tl_ntu.sensormonitor.pobjects;
 
 public class Press {
 
+
     String label;
 
     String start;
     String stop;
-
 
     public String getLabel() {
         return label;

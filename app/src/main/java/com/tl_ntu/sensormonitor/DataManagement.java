@@ -317,7 +317,6 @@ class DataManagement implements SensorListener{
         return returnLists;
     }
 
-
     private Event createEvent(int eventID){
         Event event = new Event();
         event.setId(Integer.toString(eventID));
@@ -334,6 +333,14 @@ class DataManagement implements SensorListener{
         return value;
     }
 
+    public void addPress(String name, long start, long stop) {
+        Press press = new Press();
+        press.setLabel(name);
+        press.setStart(Long.toString(start));
+        press.setStop(Long.toString(stop));
+
+        record.getPresses().add(press);
+    }
     //=========================================
     // Measure utils
     //=========================================

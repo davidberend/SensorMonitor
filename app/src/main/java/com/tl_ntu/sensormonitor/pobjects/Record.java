@@ -9,9 +9,11 @@ public class Record implements Serializable{
     String start;
     String stop;
     List<EventOwner> eventOwners;
+    List<Press> presses;
 
     public Record(){
-        eventOwners = new ArrayList<EventOwner>();
+        eventOwners = new ArrayList<>();
+        presses = new ArrayList<>();
     }
 
     public String getStart() {
@@ -32,6 +34,10 @@ public class Record implements Serializable{
     
     public List<EventOwner> getEventOwners() {
         return eventOwners;
+    }
+
+    public List<Press> getPresses() {
+        return presses;
     }
 }
 

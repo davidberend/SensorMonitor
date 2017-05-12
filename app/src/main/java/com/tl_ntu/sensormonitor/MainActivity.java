@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Switch;
@@ -38,6 +39,19 @@ public class MainActivity extends AppCompatActivity {
     Switch switchAmbientLight;
     Switch switchBattery;
     //-----------------------------------------
+    Button button1;
+    Button button2;
+    Button button3;
+    Button button4;
+    Button button5;
+    Button button6;
+    Button button7;
+    Button button8;
+    Button button9;
+    Button button0;
+    long pushDown;
+    long pushUp;
+    //-----------------------------------------
     Button buttonRecord;
     //-----------------------------------------
 
@@ -47,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<View> eventOwnerTextViews;
     ArrayList<View> eventOwnerSwitches;
     ArrayList<Integer> requiredEventOwners;
+    ArrayList<View> pwButtons;
     //-----------------------------------------
     DataManagement dataManagement;
     //-----------------------------------------
@@ -64,13 +79,9 @@ public class MainActivity extends AppCompatActivity {
         initializeVariables();
 
         buttonRecord.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-
-                measureAction();
-                //Toast.makeText(MainActivity.this, Integer.toString(i), Toast.LENGTH_SHORT).show();
-
-            }
+            public void onClick(View v) { measureAction(); }
         });
+        setPWButtonOnClickListeners();
     }
 
     //=========================================
@@ -93,6 +104,17 @@ public class MainActivity extends AppCompatActivity {
         switchBarometer        = (Switch) findViewById(R.id.switchBarometer);
         switchAmbientLight     = (Switch) findViewById(R.id.switchAmbientLight);
         switchBattery          = (Switch) findViewById(R.id.switchBattery);
+        //-----------------------------------------
+        button1                = (Button) findViewById(R.id.button1);
+        button2                = (Button) findViewById(R.id.button2);
+        button3                = (Button) findViewById(R.id.button3);
+        button4                = (Button) findViewById(R.id.button4);
+        button5                = (Button) findViewById(R.id.button5);
+        button6                = (Button) findViewById(R.id.button6);
+        button7                = (Button) findViewById(R.id.button7);
+        button8                = (Button) findViewById(R.id.button8);
+        button9                = (Button) findViewById(R.id.button9);
+        button0                = (Button) findViewById(R.id.button0);
         //-----------------------------------------
         buttonRecord           = (Button) findViewById(R.id.buttonRecord);
         //-----------------------------------------
@@ -117,6 +139,18 @@ public class MainActivity extends AppCompatActivity {
         eventOwnerSwitches.add(switchAmbientLight);
         eventOwnerSwitches.add(switchBattery);
 
+        pwButtons = new ArrayList<>();
+        pwButtons.add(button1);
+        pwButtons.add(button2);
+        pwButtons.add(button3);
+        pwButtons.add(button4);
+        pwButtons.add(button5);
+        pwButtons.add(button6);
+        pwButtons.add(button7);
+        pwButtons.add(button8);
+        pwButtons.add(button9);
+        pwButtons.add(button0);
+
         requiredEventOwners = new ArrayList<>();
 
         dataManagement = new DataManagement(this);
@@ -136,11 +170,13 @@ public class MainActivity extends AppCompatActivity {
             disableComponents();
             getRequiredSensors();
             dataManagement.read(requiredEventOwners, fileName);
+            showPWButtons();
         }
         else {
             dataManagement.save(fileName);
             enableComponents();
             buttonRecord.setText(getResources().getString(R.string.recordButtonStart));
+            hidePWButtons();
         }
     }
 
@@ -247,5 +283,46 @@ public class MainActivity extends AppCompatActivity {
                 return super.onOptionsItemSelected(item);
 
         }
+    }
+
+    private void setPWButtonOnClickListeners(){
+
+        for( View b : pwButtons){
+
+            final Button btn = (Button) b;
+            b.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    savePress(event, (String) btn.getText());
+                    return false;
+                }
+            });
+
+        }
+
+    }
+
+    private void showPWButtons(){
+        for(View b:pwButtons){
+            b.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void hidePWButtons() {
+        for (View b : pwButtons) {
+            b.setVisibility(View.INVISIBLE);
+        }
+    }
+
+    public void savePress(MotionEvent event, String buttonLabel){
+
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            pushDown = System.currentTimeMillis();
+        }
+        else if (event.getAction() == MotionEvent.ACTION_UP){
+            pushUp = System.currentTimeMillis();
+            dataManagement.addPress(buttonLabel, pushDown, pushUp);
+        }
+
     }
 }
