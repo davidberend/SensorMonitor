@@ -5,6 +5,9 @@ import android.widget.Toast;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
+
 import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
@@ -17,8 +20,12 @@ class Encryption implements Runnable{
     private IvParameterSpec ivspec;
     private SecretKeySpec keyspec;
     private Cipher cipher;
-    private String SecretKey = "0123456789abcdef";     // Dummy secretKey (CHANGE IT!)
+    private String SecretKey = "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";     // Dummy secretKey (CHANGE IT!)
     private Context context;
+    private long start;
+    private long stop;
+
+    CyclicBarrier gate;
 
     // Constructor
     //public Encryption(){
@@ -27,15 +34,17 @@ class Encryption implements Runnable{
     // init variables
     // }
 
-    public Encryption(Context context) {
+    public Encryption(Context context, CyclicBarrier gate) {
         this.context = context;
+        this.gate = gate;
+
         ivspec = new IvParameterSpec(iv.getBytes());
         keyspec = new SecretKeySpec(SecretKey.getBytes(), "AES");
 
         try {
 
 // cipher = Cipher.getInstance("AES/CBC/NoPadding");
-            cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding(1024)");
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
@@ -122,36 +131,57 @@ class Encryption implements Runnable{
     // Gets executed as soon as Thread is run --> Put your executable code in here
     @Override
     public void run() {
-        SystemClock.sleep(1000);
-        //int start = System.currentTimeMillis();
-        // Moves the current Thread into the background
-        android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
-        //Encryption mcrypt = new Encryption();
-        String dummyStr = "123456";
-        String encryptedStr = "";
-        String decryptedStr = "";
-
-// Encrypting our dummy String
         try {
-            encryptedStr = new String(encrypt(dummyStr));
-            // call variables
-            Toast.makeText(context, encryptedStr, Toast.LENGTH_SHORT).show();
-        }
-        catch(Exception e){
+            gate.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (BrokenBarrierException e) {
             e.printStackTrace();
         }
 
         try {
-            decryptedStr = new String(decrypt(encryptedStr));
-            Toast.makeText(context, decryptedStr, Toast.LENGTH_SHORT).show();
-        }
-        catch(Exception e) {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        SystemClock.sleep(1000);
+        start = System.currentTimeMillis();
+
+        for(int i = 0; i<100; i++) {
+            //int start = System.currentTimeMillis();
+            // Moves the current Thread into the background
+            android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
+            //Encryption mcrypt = new Encryption();
+            String dummyStr = "123456";
+            String encryptedStr = "";
+            String decryptedStr = "";
+
+            // Encrypting our dummy String
+            try {
+                encryptedStr = new String(encrypt(dummyStr));
+                // call variables
+                Toast.makeText(context, encryptedStr, Toast.LENGTH_SHORT).show();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            try {
+                decryptedStr = new String(decrypt(encryptedStr));
+                Toast.makeText(context, decryptedStr, Toast.LENGTH_SHORT).show();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        stop = System.currentTimeMillis();
+
     }
 
-    //int stop = System.currentTimeMillis();
+    public long getStart() {
+        return start;
+    }
 
+    public long getStop() {
+        return stop;
+    }
 }
 

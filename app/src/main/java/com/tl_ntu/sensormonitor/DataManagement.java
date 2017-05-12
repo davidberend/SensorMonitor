@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
 
 import com.tl_ntu.sensormonitor.pobjects.*;
 
@@ -34,6 +36,8 @@ class DataManagement implements SensorListener{
     List<Integer> requiredSensors;
 
     DataAccess dataAccess;
+
+    CyclicBarrier gate = new CyclicBarrier(3);
 
     private Records records;
     private Record record;
@@ -170,10 +174,17 @@ class DataManagement implements SensorListener{
         sensorManagement.registerSensors(requiredSensors);
 
         if(batteryState){
-            Thread measure = new Thread(batteryMeasurement = new BatteryMeasurement());
-            Thread encrypt = new Thread( encryption = new Encryption(context));
-            encrypt.run();
-            measure.run();
+            Thread measure = new Thread(batteryMeasurement = new BatteryMeasurement(gate));
+            Thread encrypt = new Thread( encryption = new Encryption(context, gate));
+            measure.start();
+            encrypt.start();
+            try {
+                gate.await();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (BrokenBarrierException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -192,9 +203,10 @@ class DataManagement implements SensorListener{
 
         batteryState = false;
         saveBatteryData();
+        record.setEncryptionStart(Long.toString(encryption.getStart()));
+        record.setEncryptionStop(Long.toString(encryption.getStop()));
 
     }
-
 
     @Override
     public void onValueChange(SensorEvent event, int sensor) {

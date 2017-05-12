@@ -7,6 +7,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
 
 public class BatteryMeasurement implements Runnable {
 
@@ -17,7 +19,11 @@ public class BatteryMeasurement implements Runnable {
 
     boolean ready;
 
-    public BatteryMeasurement(){
+    CyclicBarrier gate;
+
+    public BatteryMeasurement(CyclicBarrier gate){
+        this.gate = gate;
+
         rawData = new ArrayList<>();
         rawTimes = new ArrayList<>();
         ready = false;
@@ -25,6 +31,13 @@ public class BatteryMeasurement implements Runnable {
 
     @Override
     public void run() {
+        try {
+            gate.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (BrokenBarrierException e) {
+            e.printStackTrace();
+        }
         // Moves the current Thread into the background
         android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
 
@@ -49,7 +62,7 @@ public class BatteryMeasurement implements Runnable {
             rawBatteryTimes.add(System.currentTimeMillis());
         }
         */
-        for(int i = 0; i < 1000; i++){ // THIS IS DONE AT 10MS PER ROUND --> EXAMPLE: i = 10 is 100MS
+        for(int i = 0; i < 200; i++){ // THIS IS DONE AT 10MS PER ROUND --> EXAMPLE: i = 10 is 100MS
             raf.seek(0);
             rawData.add(raf.readLine());
             rawTimes.add(System.currentTimeMillis());
