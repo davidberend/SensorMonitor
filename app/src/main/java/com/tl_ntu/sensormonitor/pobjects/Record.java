@@ -29,11 +29,7 @@ public class Record implements Serializable{
     public void setStart(String start) {
         this.start = start;
     }
-
-    public List<EventOwner> getEvents() {
-        return eventOwners;
-    }
-
+    
     public List<EventOwner> getEventOwners() {
         return eventOwners;
     }
