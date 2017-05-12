@@ -18,8 +18,8 @@
         </activity>
         <activity android:name=".ResultActivity">
             android:parentActivityName="com.tl_ntu.sensormonitor.MainActivity" >
-            <!-- Parent activity meta-data to support 4.0 and lower -->
-            <meta-data
+            <!-- Parent activity meta-event to support 4.0 and lower -->
+            <meta-event
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.tl_ntu.sensormonitor.MainActivity" />
         </activity>

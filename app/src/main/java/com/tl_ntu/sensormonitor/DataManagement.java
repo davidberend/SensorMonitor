@@ -4,25 +4,8 @@ import android.content.Context;
 import android.hardware.SensorEvent;
 import android.hardware.Sensor;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.lang.reflect.Array;
-import java.lang.reflect.InvocationHandler;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Dictionary;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Random;
-import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CyclicBarrier;
 
 import com.tl_ntu.sensormonitor.pobjects.*;
 
@@ -42,45 +25,45 @@ class DataManagement implements SensorListener{
 
     // Accelerometer
     private boolean accelerometerState;
-    com.tl_ntu.sensormonitor.pobjects.Event accelerometer;
-    private int accelerometerDataID;
-    private List<Data> accelerometerData;
+    com.tl_ntu.sensormonitor.pobjects.EventOwner accelerometer;
+    private int accelerometerEventID;
+    private List<Event> accelerometerEvent;
 
     // Gyroscope
     private boolean gyroscopeState;
-    com.tl_ntu.sensormonitor.pobjects.Event gyroscope;
-    private int gyroscopeDataID;
-    private List<Data> gyroscopeData;
+    com.tl_ntu.sensormonitor.pobjects.EventOwner gyroscope;
+    private int gyroscopeEventID;
+    private List<Event> gyroscopeEvent;
     
     // Proximity
     private boolean proximityState;
-    com.tl_ntu.sensormonitor.pobjects.Event proximity;
-    private int proximityDataID;
-    private List<Data> proximityData;
+    com.tl_ntu.sensormonitor.pobjects.EventOwner proximity;
+    private int proximityEventID;
+    private List<Event> proximityEvent;
     
     // Magnetometer
     private boolean magnetometerState;
-    com.tl_ntu.sensormonitor.pobjects.Event magnetometer;
-    private int magnetometerDataID;
-    private List<Data> magnetometerData;
+    com.tl_ntu.sensormonitor.pobjects.EventOwner magnetometer;
+    private int magnetometerEventID;
+    private List<Event> magnetometerEvent;
     
     // Barometer
     private boolean barometerState;
-    com.tl_ntu.sensormonitor.pobjects.Event barometer;
-    private int barometerDataID;
-    private List<Data> barometerData;
+    com.tl_ntu.sensormonitor.pobjects.EventOwner barometer;
+    private int barometerEventID;
+    private List<Event> barometerEvent;
     
     // Ambient Light
     private boolean ambientLightState;
-    com.tl_ntu.sensormonitor.pobjects.Event ambientLight;
-    private int ambientLightDataID;
-    private List<Data> ambientLightData;
+    com.tl_ntu.sensormonitor.pobjects.EventOwner ambientLight;
+    private int ambientLightEventID;
+    private List<Event> ambientLightEvent;
 
     // Battery
     private boolean batteryState;
-    com.tl_ntu.sensormonitor.pobjects.Event battery;
-    private int batteryDataID;
-    private List<Data> batteryData;
+    com.tl_ntu.sensormonitor.pobjects.EventOwner battery;
+    private int batteryEventID;
+    private List<Event> batteryEvent;
     // Battery Utils
     BatteryMeasurement batteryMeasurement;
 
@@ -90,13 +73,13 @@ class DataManagement implements SensorListener{
 
         requiredSensors = new ArrayList<Integer>();
 
-        accelerometerData = new ArrayList<Data>();
-        gyroscopeData = new ArrayList<Data>();
-        proximityData = new ArrayList<Data>();
-        magnetometerData = new ArrayList<Data>();
-        barometerData = new ArrayList<Data>();
-        ambientLightData = new ArrayList<Data>();
-        batteryData = new ArrayList<Data>();
+        accelerometerEvent = new ArrayList<Event>();
+        gyroscopeEvent = new ArrayList<Event>();
+        proximityEvent = new ArrayList<Event>();
+        magnetometerEvent = new ArrayList<Event>();
+        barometerEvent = new ArrayList<Event>();
+        ambientLightEvent = new ArrayList<Event>();
+        batteryEvent = new ArrayList<Event>();
 
         records = new Records();
 
@@ -118,55 +101,55 @@ class DataManagement implements SensorListener{
 
         // Add required sensors to record
         if(accelerometerState){
-            accelerometer = new com.tl_ntu.sensormonitor.pobjects.Event();
+            accelerometer = new com.tl_ntu.sensormonitor.pobjects.EventOwner();
             accelerometer.setName("accelerometer");
-            accelerometer.setDataentries(accelerometerData);
-            record.getSensors().add(accelerometer);
+            accelerometer.setEventEntries(accelerometerEvent);
+            record.getEventOwners().add(accelerometer);
         }
         
         if(gyroscopeState) {
-            gyroscope = new com.tl_ntu.sensormonitor.pobjects.Event();
+            gyroscope = new com.tl_ntu.sensormonitor.pobjects.EventOwner();
             gyroscope.setName("gyroscope");
-            gyroscope.setDataentries(gyroscopeData);
-            record.getSensors().add(gyroscope);
+            gyroscope.setEventEntries(gyroscopeEvent);
+            record.getEventOwners().add(gyroscope);
         }
 
         if(proximityState) {
-            proximity = new com.tl_ntu.sensormonitor.pobjects.Event();
+            proximity = new com.tl_ntu.sensormonitor.pobjects.EventOwner();
             proximity.setName("proximity");
-            proximity.setDataentries(proximityData);
-            record.getSensors().add(proximity);
+            proximity.setEventEntries(proximityEvent);
+            record.getEventOwners().add(proximity);
         }
 
         if(magnetometerState) {
-            magnetometer = new com.tl_ntu.sensormonitor.pobjects.Event();
+            magnetometer = new com.tl_ntu.sensormonitor.pobjects.EventOwner();
             magnetometer.setName("magnetometer");
-            magnetometer.setDataentries(magnetometerData);
-            record.getSensors().add(magnetometer);
+            magnetometer.setEventEntries(magnetometerEvent);
+            record.getEventOwners().add(magnetometer);
         }
 
         if(barometerState) {
-            barometer = new com.tl_ntu.sensormonitor.pobjects.Event();
+            barometer = new com.tl_ntu.sensormonitor.pobjects.EventOwner();
             barometer.setName("barometer");
-            barometer.setDataentries(barometerData);
-            record.getSensors().add(barometer);
+            barometer.setEventEntries(barometerEvent);
+            record.getEventOwners().add(barometer);
         }
 
         if(ambientLightState) {
-            ambientLight = new com.tl_ntu.sensormonitor.pobjects.Event();
+            ambientLight = new com.tl_ntu.sensormonitor.pobjects.EventOwner();
             ambientLight.setName("ambientLight");
-            ambientLight.setDataentries(ambientLightData);
-            record.getSensors().add(ambientLight);
+            ambientLight.setEventEntries(ambientLightEvent);
+            record.getEventOwners().add(ambientLight);
         }
 
         if(batteryState) {
-            battery = new com.tl_ntu.sensormonitor.pobjects.Event();
+            battery = new com.tl_ntu.sensormonitor.pobjects.EventOwner();
             battery.setName("battery");
-            battery.setDataentries(batteryData);
-            record.getSensors().add(battery);
+            battery.setEventEntries(batteryEvent);
+            record.getEventOwners().add(battery);
         }
 
-        // Start receiving Data
+        // Start receiving Event
         record.setStart(Long.toString(System.currentTimeMillis()));
         sensorManagement.registerSensors(requiredSensors);
 
@@ -194,89 +177,89 @@ class DataManagement implements SensorListener{
     }
 
     @Override
-    public void onValueChange(SensorEvent event, int sensor) {
+    public void onValueChange(SensorEvent sensorEvent, int sensor) {
         if(sensor == Sensor.TYPE_ACCELEROMETER){
-            accelerometerDataID += 1;
+            accelerometerEventID += 1;
 
-            Data data = createData(accelerometerDataID);
+            Event event = createEvent(accelerometerEventID);
 
             Value x = createValue("x", sensorManagement.getAccelerometerX());
             Value y = createValue("y", sensorManagement.getAccelerometerY());
             Value z = createValue("z", sensorManagement.getAccelerometerZ());
 
-            data.getValues().add(x);
-            data.getValues().add(y);
-            data.getValues().add(z);
+            event.getValues().add(x);
+            event.getValues().add(y);
+            event.getValues().add(z);
 
-            accelerometerData.add(data);
+            accelerometerEvent.add(event);
         }
 
         if(sensor == Sensor.TYPE_GYROSCOPE){
-            gyroscopeDataID += 1;
+            gyroscopeEventID += 1;
 
-            Data data = createData(gyroscopeDataID);
+            Event event = createEvent(gyroscopeEventID);
 
             Value x = createValue("x", sensorManagement.getGyroscopeX());
             Value y = createValue("y", sensorManagement.getGyroscopeY());
             Value z = createValue("z", sensorManagement.getGyroscopeZ());
 
-            data.getValues().add(x);
-            data.getValues().add(y);
-            data.getValues().add(z);
+            event.getValues().add(x);
+            event.getValues().add(y);
+            event.getValues().add(z);
 
-            gyroscopeData.add(data);
+            gyroscopeEvent.add(event);
         }
 
         if(sensor == Sensor.TYPE_PROXIMITY){
-            proximityDataID += 1;
+            proximityEventID += 1;
 
-            Data data = createData(proximityDataID);
+            Event event = createEvent(proximityEventID);
 
             Value x = createValue("x", sensorManagement.getProximityX());
 
-            data.getValues().add(x);
+            event.getValues().add(x);
 
-            proximityData.add(data);
+            proximityEvent.add(event);
         }
 
         if(sensor == Sensor.TYPE_MAGNETIC_FIELD){
-            magnetometerDataID += 1;
+            magnetometerEventID += 1;
 
-            Data data = createData(magnetometerDataID);
+            Event event = createEvent(magnetometerEventID);
 
             Value x = createValue("x", sensorManagement.getMagnetometerX());
             Value y = createValue("y", sensorManagement.getMagnetometerY());
             Value z = createValue("z", sensorManagement.getMagnetometerZ());
 
-            data.getValues().add(x);
-            data.getValues().add(y);
-            data.getValues().add(z);
+            event.getValues().add(x);
+            event.getValues().add(y);
+            event.getValues().add(z);
 
-            magnetometerData.add(data);
+            magnetometerEvent.add(event);
         }
 
         if(sensor == Sensor.TYPE_PRESSURE){
-            barometerDataID += 1;
+            barometerEventID += 1;
 
-            Data data = createData(barometerDataID);
+            Event event = createEvent(barometerEventID);
 
             Value x = createValue("x", sensorManagement.getBarometerX());
 
-            data.getValues().add(x);
+            event.getValues().add(x);
 
-            barometerData.add(data);
+            barometerEvent.add(event);
         }
 
         if(sensor == Sensor.TYPE_LIGHT){
-            ambientLightDataID += 1;
+            ambientLightEventID += 1;
 
-            Data data = createData(ambientLightDataID);
+            Event event = createEvent(ambientLightEventID);
 
             Value x = createValue("x", sensorManagement.getAmbientLightX());
 
-            data.getValues().add(x);
+            event.getValues().add(x);
 
-            ambientLightData.add(data);
+            ambientLightEvent.add(event);
         }
     }
 
@@ -286,8 +269,8 @@ class DataManagement implements SensorListener{
         ArrayList<Long> rawTimes = batteryMeasurement.getRawTimes();
 
         ArrayList<Long> longData = new ArrayList<>();
-        for ( String data : rawData){
-            Long ldata = Long.parseLong(data);
+        for ( String event : rawData){
+            Long ldata = Long.parseLong(event);
             longData.add(ldata);
         }
 
@@ -297,13 +280,13 @@ class DataManagement implements SensorListener{
         longData = returnLists.get(1);
 
         for (int i = 0; i < rawData.size(); i++){
-            batteryDataID += 1;
-            Data data = new Data();
-            data.setId(Integer.toString(batteryDataID));
-            data.setTime(Long.toString(rawTimes.get(i)));
+            batteryEventID += 1;
+            Event event = new Event();
+            event.setId(Integer.toString(batteryEventID));
+            event.setTime(Long.toString(rawTimes.get(i)));
             Value amp = createValue("amp", Float.parseFloat(Long.toString(longData.get(i))));
-            data.getValues().add(amp);
-            batteryData.add(data);
+            event.getValues().add(amp);
+            batteryEvent.add(event);
         }
     }
 
@@ -335,12 +318,12 @@ class DataManagement implements SensorListener{
     }
 
 
-    private Data createData(int dataID){
-        Data data = new Data();
-        data.setId(Integer.toString(dataID));
-        data.setTime(Long.toString(System.currentTimeMillis()));
+    private Event createEvent(int eventID){
+        Event event = new Event();
+        event.setId(Integer.toString(eventID));
+        event.setTime(Long.toString(System.currentTimeMillis()));
 
-        return data;
+        return event;
     }
 
     private Value createValue(String name, Float sensorData){
@@ -356,14 +339,14 @@ class DataManagement implements SensorListener{
     //=========================================
     private void enableSensorMeasurements(){
 
-        // Reset Data ID
-        accelerometerDataID = 0;
-        gyroscopeDataID = 0;
-        proximityDataID = 0;
-        magnetometerDataID = 0;
-        barometerDataID = 0;
-        ambientLightDataID = 0;
-        batteryDataID = 0;
+        // Reset Event ID
+        accelerometerEventID = 0;
+        gyroscopeEventID = 0;
+        proximityEventID = 0;
+        magnetometerEventID = 0;
+        barometerEventID = 0;
+        ambientLightEventID = 0;
+        batteryEventID = 0;
 
 
         if(requiredSensors.contains(Sensor.TYPE_ACCELEROMETER))
@@ -399,12 +382,12 @@ class DataManagement implements SensorListener{
     }
 
     private void dropMeasurements(){
-        accelerometerData.clear();
-        gyroscopeData.clear();
-        proximityData.clear();
-        magnetometerData.clear();
-        barometerData.clear();
-        ambientLightData.clear();
-        batteryData.clear();
+        accelerometerEvent.clear();
+        gyroscopeEvent.clear();
+        proximityEvent.clear();
+        magnetometerEvent.clear();
+        barometerEvent.clear();
+        ambientLightEvent.clear();
+        batteryEvent.clear();
     }
 }

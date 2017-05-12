@@ -5,26 +5,31 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Event implements Serializable{
-    String name;
-    List<Data> dataentries;
+    String id;
+    String time;
+    List<Value> values;
 
     public Event(){
-        dataentries = new ArrayList<Data>();
+        values = new ArrayList<Value>();
     }
 
-    public String getName() {
-        return name;
+    public String getId() {
+        return id;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public List<Data> getDataentries() {
-        return dataentries;
+    public String getTime() {
+        return time;
     }
 
-    public void setDataentries(List<Data> dataentries) {
-        this.dataentries = dataentries;
+    public void setTime(String time) {
+        this.time = time;
+    }
+
+    public List<Value> getValues() {
+        return values;
     }
 }
