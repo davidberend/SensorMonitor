@@ -6,21 +6,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
-import java.io.BufferedReader;
-import java.io.EOFException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.RandomAccessFile;
 import java.util.ArrayList;
-
-import static com.tl_ntu.sensormonitor.Constants.SYS_CLASS_CAPACITY;
-import static com.tl_ntu.sensormonitor.Constants.SYS_CLASS_CURRENT_NOW;
-import static com.tl_ntu.sensormonitor.Constants.SYS_CLASS_TEMP;
-import static com.tl_ntu.sensormonitor.Constants.SYS_CLASS_VOLTAGE_NOW;
 
 //Branch test
 public class SensorManagement implements SensorEventListener{
@@ -50,6 +36,13 @@ public class SensorManagement implements SensorEventListener{
 
     private Sensor ambientLight;
     private Float ambientLightX;
+
+    private Sensor rotation;
+    float[] rotationVector;
+    float rotationPitch;
+    float rotationRoll;
+    private static final int FROM_RADS_TO_DEGS = -57;
+
 
     private SensorListener sensorListener;
 
@@ -81,6 +74,10 @@ public class SensorManagement implements SensorEventListener{
 
         ambientLight = mSensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
         ambientLightX = 0.0f;
+
+        rotation = mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
+        rotationPitch = 0.0f;
+        rotationRoll = 0.0f;
     }
 
     public void registerSensor(Sensor sensor){
@@ -108,6 +105,9 @@ public class SensorManagement implements SensorEventListener{
                     break;
                 case Sensor.TYPE_LIGHT:
                     registerSensor(ambientLight);
+                    break;
+                case Sensor.TYPE_ROTATION_VECTOR:
+                    registerSensor(rotation);
                     break;
             }
         }
@@ -158,6 +158,23 @@ public class SensorManagement implements SensorEventListener{
             case Sensor.TYPE_LIGHT:
                 ambientLightX = event.values[0];
                 sensorListener.onValueChange(event, Sensor.TYPE_LIGHT);
+                break;
+
+            case Sensor.TYPE_ROTATION_VECTOR:
+                if (event.values.length > 4) {
+                    rotationVector = event.values;
+                    float[] rotationMatrix = new float[9];
+                    SensorManager.getRotationMatrixFromVector(rotationMatrix, rotationVector);
+                    int worldAxisX = SensorManager.AXIS_X;
+                    int worldAxisZ = SensorManager.AXIS_Z;
+                    float[] adjustedRotationMatrix = new float[9];
+                    SensorManager.remapCoordinateSystem(rotationMatrix, worldAxisX, worldAxisZ, adjustedRotationMatrix);
+                    float[] orientation = new float[3];
+                    SensorManager.getOrientation(adjustedRotationMatrix, orientation);
+                    rotationPitch = orientation[1] * FROM_RADS_TO_DEGS;
+                    rotationRoll = orientation[2] * FROM_RADS_TO_DEGS;
+                    sensorListener.onValueChange(event, Sensor.TYPE_ROTATION_VECTOR);
+                }
                 break;
         }
     }
@@ -216,4 +233,11 @@ public class SensorManagement implements SensorEventListener{
         return ambientLightX;
     }
 
+    public float getRotationRoll() {
+        return rotationRoll;
+    }
+
+    public float getRotationPitch() {
+        return rotationPitch;
+    }
 }

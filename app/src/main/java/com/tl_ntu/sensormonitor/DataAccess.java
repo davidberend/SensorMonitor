@@ -1,7 +1,12 @@
 package com.tl_ntu.sensormonitor;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.Environment;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -17,11 +22,11 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 
-import static android.content.ContentValues.TAG;
-
 public class DataAccess {
 
     Context context;
+    private int requestCode;
+    private int grantResults[];
 
     public DataAccess(Context context){
         this.context = context;
@@ -103,7 +108,8 @@ public class DataAccess {
 
         try
         {
-            file.createNewFile();
+
+            //file.createNewFile();
             FileOutputStream fOut = new FileOutputStream(file);
             OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
             myOutWriter.append(data);

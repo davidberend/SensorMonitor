@@ -67,19 +67,26 @@ class DataManagement implements SensorListener{
     // Battery Utils
     BatteryMeasurement batteryMeasurement;
 
+    // Rotation
+    private boolean rotationState;
+    com.tl_ntu.sensormonitor.pobjects.EventOwner rotation;
+    private int rotationEventID;
+    private List<Event> rotationEvent;
+
     public DataManagement(Context context){
         this.context = context;
         sensorManagement = new SensorManagement(context, this);
 
-        requiredSensors = new ArrayList<Integer>();
+        requiredSensors = new ArrayList<>();
 
-        accelerometerEvent = new ArrayList<Event>();
-        gyroscopeEvent = new ArrayList<Event>();
-        proximityEvent = new ArrayList<Event>();
-        magnetometerEvent = new ArrayList<Event>();
-        barometerEvent = new ArrayList<Event>();
-        ambientLightEvent = new ArrayList<Event>();
-        batteryEvent = new ArrayList<Event>();
+        accelerometerEvent = new ArrayList<>();
+        gyroscopeEvent = new ArrayList<>();
+        proximityEvent = new ArrayList<>();
+        magnetometerEvent = new ArrayList<>();
+        barometerEvent = new ArrayList<>();
+        ambientLightEvent = new ArrayList<>();
+        batteryEvent = new ArrayList<>();
+        rotationEvent = new ArrayList<>();
 
         records = new Records();
 
@@ -147,6 +154,13 @@ class DataManagement implements SensorListener{
             battery.setName("battery");
             battery.setEventEntries(batteryEvent);
             record.getEventOwners().add(battery);
+        }
+
+        if(rotationState) {
+            rotation = new com.tl_ntu.sensormonitor.pobjects.EventOwner();
+            rotation.setName("rotation");
+            rotation.setEventEntries(rotationEvent);
+            record.getEventOwners().add(rotation);
         }
 
         // Start receiving Event
@@ -261,6 +275,20 @@ class DataManagement implements SensorListener{
 
             ambientLightEvent.add(event);
         }
+
+        if(sensor == Sensor.TYPE_ROTATION_VECTOR){
+            rotationEventID += 1;
+
+            Event event = createEvent(rotationEventID);
+
+            Value pitch = createValue("pitch", sensorManagement.getRotationPitch());
+            Value roll = createValue("roll", sensorManagement.getRotationRoll());
+
+            event.getValues().add(pitch);
+            event.getValues().add(roll);
+
+            rotationEvent.add(event);
+        }
     }
 
     private void saveBatteryData(){
@@ -354,6 +382,7 @@ class DataManagement implements SensorListener{
         barometerEventID = 0;
         ambientLightEventID = 0;
         batteryEventID = 0;
+        rotationEventID = 0;
 
 
         if(requiredSensors.contains(Sensor.TYPE_ACCELEROMETER))
@@ -376,6 +405,10 @@ class DataManagement implements SensorListener{
 
         if(requiredSensors.contains(Constants.TYPE_BATTERY))
             batteryState = true;
+
+        if(requiredSensors.contains(Sensor.TYPE_ROTATION_VECTOR))
+            rotationState = true;
+
     }
 
     private void disableSensorMeasurements(){
@@ -386,6 +419,7 @@ class DataManagement implements SensorListener{
         barometerState = false;
         ambientLightState = false;
         batteryState = false;
+        rotationState = false;
     }
 
     private void dropMeasurements(){
@@ -396,5 +430,6 @@ class DataManagement implements SensorListener{
         barometerEvent.clear();
         ambientLightEvent.clear();
         batteryEvent.clear();
+        rotationEvent.clear();
     }
 }

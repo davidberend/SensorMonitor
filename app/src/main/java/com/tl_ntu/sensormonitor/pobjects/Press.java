@@ -1,6 +1,8 @@
 package com.tl_ntu.sensormonitor.pobjects;
 
-public class Press {
+import java.io.Serializable;
+
+public class Press implements Serializable{
 
 
     String label;

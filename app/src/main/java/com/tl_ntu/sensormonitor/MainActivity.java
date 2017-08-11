@@ -1,6 +1,16 @@
 package com.tl_ntu.sensormonitor;
 
+import android.Manifest;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.hardware.Sensor;
+import android.net.Uri;
+import android.provider.Settings;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -11,6 +21,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.tl_ntu.sensormonitor.pobjects.Records;
@@ -30,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
     TextView textBarometer;
     TextView textAmbientLight;
     TextView textBattery;
+    TextView textRotation;
     //-----------------------------------------
     Switch switchAccelerometer;
     Switch switchGyroscope;
@@ -38,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
     Switch switchBarometer;
     Switch switchAmbientLight;
     Switch switchBattery;
+    Switch switchRotation;
     //-----------------------------------------
     Button button1;
     Button button2;
@@ -69,11 +82,20 @@ public class MainActivity extends AppCompatActivity {
     String fileName = "records.ser";
     int filecounter;
 
+    // PERMISSION HANDLING
+    private static final int EXTERNAL_STORAGE_PERMISSION_CONSTANT = 100;
+    private static final int REQUEST_PERMISSION_SETTING = 101;
+    private boolean sentToSettings = false;
+    private SharedPreferences permissionStatus;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        permissionStatus = getSharedPreferences("permissionStatus",MODE_PRIVATE);
+
 
         initializeComponents();
         initializeVariables();
@@ -82,6 +104,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) { measureAction(); }
         });
         setPWButtonOnClickListeners();
+        hidePWButtons();
     }
 
     //=========================================
@@ -96,27 +119,29 @@ public class MainActivity extends AppCompatActivity {
         textBarometer        = (TextView) findViewById(R.id.textBarometer);
         textAmbientLight     = (TextView) findViewById(R.id.textAmbientLight);
         textBattery          = (TextView) findViewById(R.id.textBattery);
+        textRotation         = (TextView) findViewById(R.id.textRotation);
         //-----------------------------------------
-        switchAccelerometer    = (Switch) findViewById(R.id.switchAccelerometer);
-        switchGyroscope        = (Switch) findViewById(R.id.switchGyroscope);
-        switchProximity        = (Switch) findViewById(R.id.switchProximity);
-        switchMagnetometer     = (Switch) findViewById(R.id.switchMagnetometer);
-        switchBarometer        = (Switch) findViewById(R.id.switchBarometer);
-        switchAmbientLight     = (Switch) findViewById(R.id.switchAmbientLight);
-        switchBattery          = (Switch) findViewById(R.id.switchBattery);
+        switchAccelerometer  = (Switch) findViewById(R.id.switchAccelerometer);
+        switchGyroscope      = (Switch) findViewById(R.id.switchGyroscope);
+        switchProximity      = (Switch) findViewById(R.id.switchProximity);
+        switchMagnetometer   = (Switch) findViewById(R.id.switchMagnetometer);
+        switchBarometer      = (Switch) findViewById(R.id.switchBarometer);
+        switchAmbientLight   = (Switch) findViewById(R.id.switchAmbientLight);
+        switchBattery        = (Switch) findViewById(R.id.switchBattery);
+        switchRotation       = (Switch) findViewById(R.id.switchRotation);
         //-----------------------------------------
-        button1                = (Button) findViewById(R.id.button1);
-        button2                = (Button) findViewById(R.id.button2);
-        button3                = (Button) findViewById(R.id.button3);
-        button4                = (Button) findViewById(R.id.button4);
-        button5                = (Button) findViewById(R.id.button5);
-        button6                = (Button) findViewById(R.id.button6);
-        button7                = (Button) findViewById(R.id.button7);
-        button8                = (Button) findViewById(R.id.button8);
-        button9                = (Button) findViewById(R.id.button9);
-        button0                = (Button) findViewById(R.id.button0);
+        button1              = (Button) findViewById(R.id.button1);
+        button2              = (Button) findViewById(R.id.button2);
+        button3              = (Button) findViewById(R.id.button3);
+        button4              = (Button) findViewById(R.id.button4);
+        button5              = (Button) findViewById(R.id.button5);
+        button6              = (Button) findViewById(R.id.button6);
+        button7              = (Button) findViewById(R.id.button7);
+        button8              = (Button) findViewById(R.id.button8);
+        button9              = (Button) findViewById(R.id.button9);
+        button0              = (Button) findViewById(R.id.button0);
         //-----------------------------------------
-        buttonRecord           = (Button) findViewById(R.id.buttonRecord);
+        buttonRecord         = (Button) findViewById(R.id.buttonRecord);
         //-----------------------------------------
     }
 
@@ -129,6 +154,7 @@ public class MainActivity extends AppCompatActivity {
         eventOwnerTextViews.add(textBarometer);
         eventOwnerTextViews.add(textAmbientLight);
         eventOwnerTextViews.add(textBattery);
+        eventOwnerTextViews.add(textRotation);
 
         eventOwnerSwitches = new ArrayList<>();
         eventOwnerSwitches.add(switchAccelerometer);
@@ -138,6 +164,7 @@ public class MainActivity extends AppCompatActivity {
         eventOwnerSwitches.add(switchBarometer);
         eventOwnerSwitches.add(switchAmbientLight);
         eventOwnerSwitches.add(switchBattery);
+        eventOwnerSwitches.add(switchRotation);
 
         pwButtons = new ArrayList<>();
         pwButtons.add(button1);
@@ -179,13 +206,70 @@ public class MainActivity extends AppCompatActivity {
             hidePWButtons();
         }
     }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == EXTERNAL_STORAGE_PERMISSION_CONSTANT) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                //The External Storage Write Permission is granted to you... Continue your left job...
+                proceedAfterPermission();
+            } else {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    //Show Information about why you need the permission
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                    builder.setTitle("Need Storage Permission");
+                    builder.setMessage("This app needs storage permission");
+                    builder.setPositiveButton("Grant", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.cancel();
 
-    //=========================================
-    // App utils
-    //=========================================
 
-    private void demoAction(){
+                            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, EXTERNAL_STORAGE_PERMISSION_CONSTANT);
 
+
+                        }
+                    });
+                    builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.cancel();
+                        }
+                    });
+                    builder.show();
+                } else {
+                    Toast.makeText(getBaseContext(),"Unable to get Permission",Toast.LENGTH_LONG).show();
+                }
+            }
+        }
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_PERMISSION_SETTING) {
+            if (ActivityCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                //Got Permission
+                proceedAfterPermission();
+            }
+        }
+    }
+
+
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
+        if (sentToSettings) {
+            if (ActivityCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                //Got Permission
+                proceedAfterPermission();
+            }
+        }
+    }
+    private void proceedAfterPermission() {
+        //We've got the permission, now we can proceed further
+        Toast.makeText(getBaseContext(), "We got the Storage Permission", Toast.LENGTH_LONG).show();
         Records records = dataAccess.loadFileFromStorage(fileName);
         Gson gson = new Gson();
         String jRecord = gson.toJson(records);
@@ -196,8 +280,77 @@ public class MainActivity extends AppCompatActivity {
         boolean write = dataAccess.isExternalStorageWritable();
 
         String time = Float.toString(System.currentTimeMillis());
+
         dataAccess.saveInExternalStorage(time + filecounter + ".txt" , jRecord);
         filecounter += 1;
+    }
+
+    //=========================================
+    // App utils
+    //=========================================
+
+    private void demoAction(){
+
+        if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                //Show Information about why you need the permission
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                builder.setTitle("Need Storage Permission");
+                builder.setMessage("This app needs storage permission.");
+                builder.setPositiveButton("Grant", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                        ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, EXTERNAL_STORAGE_PERMISSION_CONSTANT);
+                    }
+                });
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+                builder.show();
+            } else if (permissionStatus.getBoolean(Manifest.permission.WRITE_EXTERNAL_STORAGE,false)) {
+                //Previously Permission Request was cancelled with 'Dont Ask Again',
+                // Redirect to Settings after showing Information about why you need the permission
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                builder.setTitle("Need Storage Permission");
+                builder.setMessage("This app needs storage permission.");
+                builder.setPositiveButton("Grant", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                        sentToSettings = true;
+                        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                        Uri uri = Uri.fromParts("package", getPackageName(), null);
+                        intent.setData(uri);
+                        startActivityForResult(intent, REQUEST_PERMISSION_SETTING);
+                        Toast.makeText(getBaseContext(), "Go to Permissions to Grant Storage", Toast.LENGTH_LONG).show();
+                    }
+                });
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+                builder.show();
+            } else {
+                //just request the permission
+                ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, EXTERNAL_STORAGE_PERMISSION_CONSTANT);
+            }
+
+
+            SharedPreferences.Editor editor = permissionStatus.edit();
+            editor.putBoolean(Manifest.permission.WRITE_EXTERNAL_STORAGE,true);
+            editor.commit();
+
+
+        } else {
+            //You already have the permission, just go ahead.
+            proceedAfterPermission();
+        }
 
     }
 
@@ -257,6 +410,8 @@ public class MainActivity extends AppCompatActivity {
         if(switchBattery.isChecked())
             requiredEventOwners.add(Constants.TYPE_BATTERY);
 
+        if(switchRotation.isChecked())
+            requiredEventOwners.add(Sensor.TYPE_ROTATION_VECTOR);
     }
 
     @Override
@@ -285,6 +440,8 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    int cnt = 0;
+
     private void setPWButtonOnClickListeners(){
 
         for( View b : pwButtons){
@@ -293,7 +450,18 @@ public class MainActivity extends AppCompatActivity {
             b.setOnTouchListener(new View.OnTouchListener() {
                 @Override
                 public boolean onTouch(View v, MotionEvent event) {
-                    savePress(event, (String) btn.getText());
+
+                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                        pushDown = System.currentTimeMillis();
+                        cnt++;
+                        return true;
+                    }
+                    else if (event.getAction() == MotionEvent.ACTION_UP) {
+                        pushUp = System.currentTimeMillis();
+                        cnt++;
+                        dataManagement.addPress((String) btn.getText(), pushDown, pushUp);
+                        return true;
+                    }
                     return false;
                 }
             });
@@ -314,15 +482,4 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void savePress(MotionEvent event, String buttonLabel){
-
-        if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            pushDown = System.currentTimeMillis();
-        }
-        else if (event.getAction() == MotionEvent.ACTION_UP){
-            pushUp = System.currentTimeMillis();
-            dataManagement.addPress(buttonLabel, pushDown, pushUp);
-        }
-
-    }
 }
